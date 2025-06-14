@@ -9,5 +9,5 @@ Create the uv-managed virtual environment and install all dependencies:
 
 ```bash
 uv venv
-uv sync --dev
+uv sync --extra dev
 ```

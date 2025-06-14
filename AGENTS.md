@@ -82,7 +82,7 @@ uv add <package>
 uv add --dev <package>
 uv remove <package>
 uv lock
-uv sync
+uv sync --extra dev
 ```
 
 - **Running commands** – always prefix with `uv run --`
