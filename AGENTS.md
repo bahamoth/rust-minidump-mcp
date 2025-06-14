@@ -113,6 +113,11 @@ uv run -- pytest -q
 - Minidump files (.dmp) are provided as user input, not stored in project
 - Check `tools/` directory for available Rust CLI tools before installing globally
 - Use `ls -la symbols/` to verify converted .sym files from dump_syms are properly cached
+- To disable accidental `pip` usage you can override the `pip` command:
+```bash
+echo 'echo "pip disabled, use uv" >&2; exit 1' > .venv/bin/pip
+chmod +x .venv/bin/pip
+```
 
 ---
 
