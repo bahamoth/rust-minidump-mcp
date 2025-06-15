@@ -50,29 +50,28 @@ Your duties:
 ## 2. Project Structure
 
 ```
-/rust_minidump_mcp/    # Main MCP server package
+/rust_minidump_mcp/     # Main MCP server package
   ├── __init__.py
   ├── server.py         # FastMCP server entry point
-  ├── handlers/         # MCP tool and resource handlers
-  ├── models/           # Data models and schemas
-  ├── utils/            # Utility functions
-  └── prompts/          # AI prompt templates
+  ├── prompts/          # Reusable, parameterized prompt templates for MCP clients
+  ├── resources/        # Expose data sources and dynamic content generators to MCP clients
+  ├── tools/            # Expose functions as executable capabilities for MCP client
+  └── utils/            # Utilities
+/symbols/               # Breakpad format transformed symbol temp files.
 /tests/                 # Test files
-/tools/                 # Rust CLI tools (minidump-stackwalk, dump_syms)
-/symbols/               # Breakpad .sym store
+/tools/                 # CLI tools (minidump-stackwalk, dump_syms)
+/minidumps/             # Minidump transformed temp files.
 /docs/                  # Documentation
 pyproject.toml          # Python project configuration (uv managed)
 ```
 
-Auto‑generated artifacts live under `/tmp` or `/target`; do **not** commit them.
-
 ---
 
-## 3. Coding Style Guides
+## 3. Coding Guides
 
-### Python
+### Python Environment
 
-- **Python 3.13 + managed exclusively with [`uv`](https://github.com/astral-sh/uv).** Never use `pip`, `python -m venv`, `virtualenv`, `poetry`.
+- **Python 3.13+ managed exclusively with [`uv`](https://github.com/astral-sh/uv).** Never use `pip`, `python -m venv`, `virtualenv`, `poetry`.
 - **Environment workflow**
 
 ```bash
@@ -85,7 +84,7 @@ uv lock
 uv sync
 ```
 
-- **Running commands** – always prefix with `uv run --`
+- **Running commands**– always prefix with `uv run --`
 
 ```bash
 uv run -- ruff check .
@@ -93,8 +92,15 @@ uv run -- mypy .
 uv run -- pytest -q
 ```
 
-- Linter `ruff` · Type‑checker `mypy` · Configs `pydantic` v2
+- Linter `ruff` · Type‑checker `mypy` · Configs `pydantic` v2
 - `.venv/` is git‑ignored — never commit it.
+
+### FastMCP
+This project uses [FastMCP v2](https://github.com/jlowin/fastmcp)
+- **server.py** : Refer to https://gofastmcp.com/servers/fastmcp  
+- **/rust_minidump_mcp/tools/** : Refer to https://gofastmcp.com/servers/tools  
+- **/rust_minidump_mcp/resources/** : Refer to https://gofastmcp.com/servers/resources  
+- **/rust_minidump_mcp/prompts/** : Refer to https://gofastmcp.com/servers/prompts  
 
 ---
 
