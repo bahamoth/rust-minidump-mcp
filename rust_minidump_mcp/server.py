@@ -1,16 +1,9 @@
 """FastMCP server entry point."""
 
-from fastapi import FastAPI
+from fastmcp import FastMCP
 
-app = FastAPI(title="Rust Minidump MCP")
-
-
-@app.get("/healthz")
-async def health_check() -> dict[str, str]:
-    return {"status": "ok"}
+mcp: FastMCP[None] = FastMCP(name="RustMinidumpMcp")
 
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+async def main() -> None:
+    await mcp.run_async(transport="streamable-http", host="0.0.0.0", port=8080)
