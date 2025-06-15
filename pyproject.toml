@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Rust Minidump MCP server"
 authors = [{name = "Example"}]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 dependencies = [
     "uvicorn",
     "pydantic>=2",
@@ -23,6 +23,6 @@ dev-dependencies = [
 line-length = 100
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 check_untyped_defs = true
 strict = true

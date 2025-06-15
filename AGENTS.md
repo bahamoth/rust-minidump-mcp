@@ -29,7 +29,7 @@ Your duties:
 
 ### Prompts
 
-1. **Symbol Transform** – converts Symbol files to Breakpad format.
+1. **Symbol Transform** – converts symbol files to Breakpad format.
 2. **Crash Analysis** – analyzes crash dumps and suggests fixes.
 
 ---
@@ -212,7 +212,7 @@ Fixes #<issue_number>
 - **Strip PII**: Remove personal information from crash dumps before LLM analysis
 - **Limit context**: Keep analysis under 4k tokens; truncate stack frames to top 50 if needed
 - **Validate paths**: Sanitize all file paths before processing
-- **Rate limiting**: Implement appropriate delays for external symbol server requests
+- **Rate limiting**: TBD. Let's discuss it later
 - **Error handling**: Gracefully handle malformed minidump files
 - **Resource limits**: Set memory and time limits for minidump processing
 
