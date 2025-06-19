@@ -1,0 +1,41 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "github_token",
+      "description": "GitHub Personal Access Token",
+      "password": true
+    }
+  ],
+  "servers": {
+    "github-stage": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "-e",
+        "GITHUB_HOST",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github_token}",
+        "GITHUB_HOST": "https://github.stage.ncsoft.com"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "playwright": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "--init", "mcp/playwright"]
+    },
+    "fetch": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "mcp/fetch"]
+    }
+  }
+}
