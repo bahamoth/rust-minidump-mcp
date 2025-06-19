@@ -1,2 +1,5 @@
 .aider*
 .venv/
+tools/.crates.toml
+tools/.crates2.json
+tools/bin/*
