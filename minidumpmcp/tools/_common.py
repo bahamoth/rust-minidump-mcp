@@ -67,9 +67,7 @@ async def run_subprocess(
     err_text = stderr.decode() if stderr else ""
 
     if proc.returncode != 0:
-        raise ToolExecutionError(
-            f"Command {' '.join(str_cmd)} failed with exit-code {proc.returncode}\n{err_text}"
-        )
+        raise ToolExecutionError(f"Command {' '.join(str_cmd)} failed with exit-code {proc.returncode}\n{err_text}")
 
     return out_text
 
@@ -78,4 +76,3 @@ def which(cmd: str) -> str | None:  # noqa: D401 – thin wrapper
     """Return the absolute path to *cmd* or *None* when not found on *PATH*."""
 
     return shutil.which(cmd)
-

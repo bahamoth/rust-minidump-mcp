@@ -51,9 +51,7 @@ class CrashAnalysisProvider:
         self,
         analysis_data: Dict[str, Any] = Field(description="Complete JSON output from stackwalk_minidump tool"),
         frame_limit: int = Field(default=20, description="Maximum number of frames to analyze (max: 50)"),
-        focus_thread: Literal["crashing", "all"] = Field(
-            default="crashing", description="Which thread to analyze"
-        ),
+        focus_thread: Literal["crashing", "all"] = Field(default="crashing", description="Which thread to analyze"),
     ) -> str:
         """
         Analyze stack trace frames and interpret call patterns, execution flow, and function sequences.

@@ -12,11 +12,11 @@ def _get_bin_path(bin_name: str) -> Path:
     """Get the path to the bin directory."""
     prefix = Path(__file__).parent / "bin"
     match (sys.platform):
-        case ("linux"):
+        case "linux":
             return Path(prefix / f"{bin_name}-linux")
-        case ("darwin"):
+        case "darwin":
             return Path(prefix / f"{bin_name}-macos")
-        case ("win32"):
+        case "win32":
             return Path(prefix / f"{bin_name}-windows")
         case _:
             raise ValueError("Unsupported platform")

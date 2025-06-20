@@ -51,6 +51,7 @@ class TestStackwalkProvider:
 
         # Mock __file__ to use our fake location
         import minidumpmcp.tools.stackwalk as stackwalk_module
+
         monkeypatch.setattr(stackwalk_module, "__file__", str(fake_stackwalk_file))
 
         result = await self.provider.stackwalk_minidump(str(minidump_file))
@@ -66,7 +67,9 @@ class TestStackwalkProvider:
         test_minidump = Path(__file__).parent / "testdata" / "test.dmp"
 
         if not test_minidump.exists():
-            pytest.skip("Test minidump file not found. Run: curl -L -o tests/testdata/test.dmp https://github.com/rust-minidump/rust-minidump/raw/main/testdata/test.dmp")
+            pytest.skip(
+                "Test minidump file not found. Run: curl -L -o tests/testdata/test.dmp https://github.com/rust-minidump/rust-minidump/raw/main/testdata/test.dmp"
+            )
 
         result = await self.provider.stackwalk_minidump(str(test_minidump))
 
