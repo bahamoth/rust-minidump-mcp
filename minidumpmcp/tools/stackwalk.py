@@ -1,10 +1,25 @@
 """Stackwalk tools for FastMCP."""
 
 import json
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from ._common import ToolExecutionError, run_subprocess, which
+
+
+def _get_bin_path(bin_name: str) -> Path:
+    """Get the path to the bin directory."""
+    prefix = Path(__file__).parent / "bin"
+    match (sys.platform):
+        case ("linux"):
+            return Path(prefix / f"{bin_name}-linux")
+        case ("darwin"):
+            return Path(prefix / f"{bin_name}-macos")
+        case ("win32"):
+            return Path(prefix / f"{bin_name}-windows")
+        case _:
+            raise ValueError("Unsupported platform")
 
 
 class StackwalkProvider:
@@ -38,8 +53,9 @@ class StackwalkProvider:
             return {"error": f"Path is not a file: {minidump_path}", "success": False}
 
         # Get absolute path to the minidump-stackwalk binary
-        project_root = Path(__file__).parent.parent.parent
-        stackwalk_binary = project_root / "tools" / "bin" / "minidump-stackwalk"
+        # project_root = Path(__file__).parent.parent.parent
+
+        stackwalk_binary = _get_bin_path("minidump-stackwalk")
 
         # If not found in project tools, try to find it on PATH
         if not stackwalk_binary.exists():

@@ -17,11 +17,13 @@ minidump-mcp = "minidumpmcp.server:main"
 minidump-mcp-cli = "minidumpmcp.cli:main"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["minidumpmcp"]
+include = ["minidumpmcp/tools/bin/**"]
+
 
 [tool.ruff]
 line-length = 120

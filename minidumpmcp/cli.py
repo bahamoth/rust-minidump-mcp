@@ -45,6 +45,12 @@ async def list_tools() -> None:
             if callstack.type == "text":
                 print_json(callstack.text)
 
+        prompts = await mcp_client.list_prompts()
+        typer.echo("Available prompts:")
+        for prompt in prompts:
+            typer.echo(f"- {prompt.name}: {prompt.description}")
+            for arg in prompt.arguments if prompt.arguments else []:
+                typer.echo(f"  - {arg.name}: {arg.description} (required: {arg.required})")
 
 
 if __name__ == "__main__":

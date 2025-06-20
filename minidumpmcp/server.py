@@ -1,21 +1,27 @@
 """FastMCP server entry point."""
 
-# import asyncio
-
 import asyncio
 
 from fastmcp import FastMCP
 
+from minidumpmcp.prompts import CrashAnalysisProvider
 from minidumpmcp.tools.stackwalk import StackwalkProvider
 
 
 async def main() -> None:
-    # Initialize FastMCP and register tools
+    # Initialize FastMCP and register tools and prompts
     mcp: FastMCP[None] = FastMCP(name="RustMinidumpMcp")
 
-    # Register tools during initialization
+    # Register tools
     stackwalk_provider = StackwalkProvider()
     mcp.tool(stackwalk_provider.stackwalk_minidump)
+
+    # Register crash analysis prompts
+    crash_provider = CrashAnalysisProvider()
+    mcp.prompt(crash_provider.crash_analyzer)
+    mcp.prompt(crash_provider.stack_interpreter)
+    mcp.prompt(crash_provider.exception_decoder)
+    mcp.prompt(crash_provider.symbol_advisor)
 
     await mcp.run_async(
         transport="streamable-http",
