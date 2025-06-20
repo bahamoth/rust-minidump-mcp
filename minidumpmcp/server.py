@@ -5,6 +5,7 @@
 import asyncio
 
 from fastmcp import FastMCP
+
 from minidumpmcp.tools.stackwalk import StackwalkProvider
 
 

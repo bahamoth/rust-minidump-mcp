@@ -9,10 +9,12 @@ dependencies = [
     "uvicorn",
     "pydantic>=2",
     "fastmcp>=2.8.1",
+    "typer>=0.16.0",
 ]
 
 [project.scripts]
-rust-minidump-mcp = "minidumpmcp.server:main"
+minidump-mcp = "minidumpmcp.server:main"
+minidump-mcp-cli = "minidumpmcp.cli:main"
 
 [build-system]
 requires = ["hatchling"]

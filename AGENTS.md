@@ -2,6 +2,12 @@
 
 # Rust Minidump MCP Guide
 
+> Central prompt & coding conventions for all AI agents (OpenAI Codex, Claude Code, ChatGPT).ENTS.md -->
+
+# Rust Minidump MCP Gu| Task        | Preferred CLI        | Notes                                    |
+| ----------- | -------------------- | ---------------------------------------- |
+| Dump → JSON | `minidump-stackwalk` | Binary available in **tools/bin/minidump-stackwalk**<br>Please refer to the tool documentation or run `tools/bin/minidump-stackwalk --help` |
+| Sym gen     | `dump_syms`          | Binary available in **tools/bin/** (if installed)<br>Please refer to the tool documentation or run `dump_syms --help` |
 > Central prompt & coding conventions for all AI agents (OpenAI Codex, Claude Code, ChatGPT).  
 > 🇰🇷 한국어 주석을 병기하여 다국어 모델이 모두 이해할 수 있도록 작성했습니다.
 
@@ -19,8 +25,8 @@ Your duties:
 
 ### Tools
 
-1. **rust-minidump/minidump-stackwalk CLI** – processes minidump files and outputs JSON with stack traces, symbols, and metadata.
-2. **mozilla/dump_syms** – generates symbol files for binaries in Breakpad format.
+1. **minidump-stackwalk CLI** – processes minidump files and outputs JSON with stack traces, symbols, and metadata (from tools/bin/). Source: [rust-minidump/minidump-stackwalk](https://github.com/rust-minidump/rust-minidump/tree/main/minidump-stackwalk)
+2. **dump_syms CLI** – generates symbol files for binaries in Breakpad format (from tools/bin/). Source: [mozilla/dump_syms](https://github.com/mozilla/dump_syms)
 
 ### Resources
 
@@ -50,9 +56,10 @@ Your duties:
 ## 2. Project Structure
 
 ```
-/rust_minidump_mcp/     # Main MCP server package
+/minidumpmcp/           # Main MCP server package
   ├── __init__.py
   ├── server.py         # FastMCP server entry point
+  ├── cli.py            # CLI interface
   ├── prompts/          # Reusable, parameterized prompt templates for MCP clients
   ├── resources/        # Expose data sources and dynamic content generators to MCP clients
   ├── tools/            # Expose functions as executable capabilities for MCP client
@@ -60,9 +67,10 @@ Your duties:
 /symbols/               # Breakpad format transformed symbol temp files.
 /tests/                 # Test files
 /tools/                 # CLI tools (minidump-stackwalk, dump_syms)
-/minidumps/             # Minidump transformed temp files.
+  └── bin/              # Binary executables
 /docs/                  # Documentation
 pyproject.toml          # Python project configuration (uv managed)
+justfile                # Task runner configuration
 ```
 
 ---
@@ -98,9 +106,9 @@ uv run -- pytest -q
 ### FastMCP
 This project uses [FastMCP v2](https://github.com/jlowin/fastmcp)
 - **server.py** : Refer to https://gofastmcp.com/servers/fastmcp  
-- **/rust_minidump_mcp/tools/** : Refer to https://gofastmcp.com/servers/tools  
-- **/rust_minidump_mcp/resources/** : Refer to https://gofastmcp.com/servers/resources  
-- **/rust_minidump_mcp/prompts/** : Refer to https://gofastmcp.com/servers/prompts  
+- **/minidumpmcp/tools/** : Refer to https://gofastmcp.com/servers/tools  
+- **/minidumpmcp/resources/** : Refer to https://gofastmcp.com/servers/resources  
+- **/minidumpmcp/prompts/** : Refer to https://gofastmcp.com/servers/prompts  
 
 ---
 
@@ -115,10 +123,10 @@ This project uses [FastMCP v2](https://github.com/jlowin/fastmcp)
 
 ## 5. Dev Environment Tips
 
-- Use `uv run -- python rust_minidump_mcp/server.py` to start the MCP server directly
+- Use `uv run -- python minidumpmcp/server.py` to start the MCP server directly
 - Run `uv add --dev <package>` to add development dependencies for testing/linting
 - Minidump files (.dmp) are provided as user input, not stored in project
-- Check `tools/` directory for available Rust CLI tools before installing globally
+- Check `tools/bin/` directory for available CLI tools before installing globally
 - Use `ls -la symbols/` to verify converted .sym files from dump_syms are properly cached
 - To disable accidental `pip` usage you can override the `pip` command:
 ```bash
@@ -132,17 +140,17 @@ chmod +x .venv/bin/pip
 
 - Find the CI configuration in `.github/workflows/` folder
 - Run full test suite: `uv run -- pytest tests/`
-- Run specific test file: `uv run -- pytest tests/test_handlers.py -v`
+- Run specific test file: `uv run -- pytest tests/test_stackwalk.py -v`
 - Run linting checks: `uv run -- ruff check . && uv run -- mypy .`
-- Test MCP server functionality: `uv run -- python -m rust_minidump_mcp.server --test-mode`
-- To focus on specific test: `uv run -- pytest -k "test_minidump_processing"`
+- Test MCP server functionality: `uv run -- python -m minidumpmcp.server --test-mode`
+- To focus on specific test: `uv run -- pytest -k "test_stackwalk"`
 - Fix any test or type errors until the whole suite is green
 - After moving files or changing imports, run full linting to ensure everything passes
 - Add or update tests for any code you change, even if not explicitly requested
 
 ### Validation Steps
 
-1. Process a sample minidump: `tools/minidump-stackwalk --json samples/test.dmp`
+1. Process a sample minidump: `tools/bin/minidump-stackwalk --json tests/testdata/test.dmp`
 2. Verify symbol resolution works with test symbols
 3. Check MCP server responds to tool calls correctly
 4. Ensure all prompt templates render without errors
@@ -151,13 +159,13 @@ chmod +x .venv/bin/pip
 
 ## 7. PR Instructions
 
-**Title format**: `[rust-minidump-mcp] <Description>`
+**Title format**: `[minidump-mcp] <Description>`
 
 **Example titles**:
 
-- `[rust-minidump-mcp] Add crash analysis prompt template`
-- `[rust-minidump-mcp] Fix symbol resolution for Windows PE files`
-- `[rust-minidump-mcp] Improve MCP server error handling`
+- `[minidump-mcp] Add crash analysis prompt template`
+- `[minidump-mcp] Fix symbol resolution for Windows PE files`
+- `[minidump-mcp] Improve MCP server error handling`
 
 **PR Description Template**:
 

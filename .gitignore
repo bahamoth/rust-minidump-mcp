@@ -1,5 +1,17 @@
-.aider*
+# Development Environment
+.idea/
 .venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Aider AI Assistant
+.aider*
+
+# Tools and Build Artifacts
 tools/.crates.toml
 tools/.crates2.json
-tools/bin/*
+tools/bin/
