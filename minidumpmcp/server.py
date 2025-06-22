@@ -3,7 +3,6 @@
 import asyncio
 
 from fastmcp import FastMCP
-
 from minidumpmcp.prompts import CrashAnalysisProvider
 from minidumpmcp.tools.stackwalk import StackwalkProvider
 

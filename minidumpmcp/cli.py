@@ -2,9 +2,10 @@ import asyncio
 from typing import Any
 
 import typer
-from fastmcp import Client
 from mcp import Tool
 from rich import print_json
+
+from fastmcp import Client
 
 default_config = {
     "RustMinidumpMcp": {
@@ -16,8 +17,7 @@ default_config = {
 app = typer.Typer()
 mcp_client: Client[Any] = Client(default_config)
 
-
-@app.command()
+@app.command("client")
 def client() -> None:
     """Run the MCP client."""
     typer.echo("Starting MCP client...")
@@ -52,5 +52,11 @@ async def list_tools() -> None:
                 typer.echo(f"  - {arg.name}: {arg.description} (required: {arg.required})")
 
 
-if __name__ == "__main__":
+@app.callback()
+def main() -> None:
+    """MiniDump MCP CLI Tool."""
     app()
+
+
+if __name__ == "__main__":
+    main()
