@@ -2,10 +2,9 @@ import asyncio
 from typing import Any
 
 import typer
+from fastmcp import Client
 from mcp import Tool
 from rich import print_json
-
-from fastmcp import Client
 
 default_config = {
     "RustMinidumpMcp": {
@@ -16,6 +15,7 @@ default_config = {
 
 app = typer.Typer()
 mcp_client: Client[Any] = Client(default_config)
+
 
 @app.command("client")
 def client() -> None:

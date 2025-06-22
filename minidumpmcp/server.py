@@ -1,15 +1,38 @@
 """FastMCP server entry point."""
 
 import asyncio
+import logging
+from typing import cast
 
 from fastmcp import FastMCP
+
+from minidumpmcp.config import ServerSettings
+from minidumpmcp.config.settings import SseTransportConfig, StreamableHttpConfig
 from minidumpmcp.prompts import CrashAnalysisProvider
 from minidumpmcp.tools.stackwalk import StackwalkProvider
 
 
+def setup_logging(settings: ServerSettings) -> None:
+    """Configure logging based on settings."""
+    logging.basicConfig(
+        level=getattr(logging, settings.log_level),
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
+
 async def run_mcp_server() -> None:
+    """Run the MCP server with configuration from settings."""
+    # Load configuration
+    settings = ServerSettings()
+
+    # Setup logging
+    setup_logging(settings)
+    logger = logging.getLogger(__name__)
+
+    logger.info("Starting %s with %s transport", settings.name, settings.transport)
+
     # Initialize FastMCP and register tools and prompts
-    mcp: FastMCP[None] = FastMCP(name="minidump-mcp")
+    mcp: FastMCP[None] = FastMCP(name=settings.name)
 
     # Register tools
     stackwalk_provider = StackwalkProvider()
@@ -22,15 +45,35 @@ async def run_mcp_server() -> None:
     mcp.prompt(crash_provider.exception_decoder)
     mcp.prompt(crash_provider.symbol_advisor)
 
+    # Build run_async arguments based on transport configuration
     try:
-        await mcp.run_async(
-            transport="streamable-http",
-            host="0.0.0.0",
-            port=8000,
-            log_level="debug",
-        )
+        match settings.transport:
+            case "stdio":
+                logger.info("Starting STDIO transport")
+                await mcp.run_async(transport="stdio")
+            case "streamable-http":
+                http_config = cast(StreamableHttpConfig, settings.transport_config)
+                logger.info("Starting Streamable HTTP transport on %s:%s", http_config.host, http_config.port)
+                await mcp.run_async(
+                    transport="streamable-http",
+                    host=http_config.host,
+                    port=http_config.port,
+                    path=http_config.path,
+                )
+            case "sse":
+                sse_config = cast(SseTransportConfig, settings.transport_config)
+                logger.info("Starting SSE transport on %s:%s", sse_config.host, sse_config.port)
+                await mcp.run_async(
+                    transport="sse",
+                    host=sse_config.host,
+                    port=sse_config.port,
+                    path=sse_config.path,
+                )
+            case _:
+                raise ValueError(f"Unsupported transport: {settings.transport}")
+
     except (KeyboardInterrupt, asyncio.CancelledError):
-        print("Server shutdown initiated...")
+        logger.info("Server shutdown initiated...")
         # FastMCP might not have explicit shutdown method,
         # but cancellation should stop the server
         raise

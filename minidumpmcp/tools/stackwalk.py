@@ -11,7 +11,7 @@ from ._common import ToolExecutionError, run_subprocess, which
 def _get_bin_path(bin_name: str) -> Path:
     """Get the path to the bin directory."""
     prefix = Path(__file__).parent / "bin"
-    match (sys.platform):
+    match sys.platform:
         case "linux":
             return Path(prefix / f"{bin_name}-linux")
         case "darwin":

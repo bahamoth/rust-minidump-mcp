@@ -556,6 +556,7 @@ source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
     { name = "pydantic" },
+    { name = "pydantic-settings" },
     { name = "typer" },
     { name = "uvicorn" },
 ]
@@ -575,6 +576,7 @@ dev = [
 requires-dist = [
     { name = "fastmcp", specifier = ">=2.8.1" },
     { name = "pydantic", specifier = ">=2" },
+    { name = "pydantic-settings", specifier = ">=2.9.1" },
     { name = "typer", specifier = ">=0.16.0" },
     { name = "uvicorn" },
 ]
