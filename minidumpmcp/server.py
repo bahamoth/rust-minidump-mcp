@@ -5,10 +5,10 @@ import logging
 from typing import cast
 
 from fastmcp import FastMCP
-
 from minidumpmcp.config import ServerSettings
 from minidumpmcp.config.settings import SseTransportConfig, StreamableHttpConfig
 from minidumpmcp.prompts import CrashAnalysisProvider
+from minidumpmcp.tools.dump_syms import DumpSymsTool
 from minidumpmcp.tools.stackwalk import StackwalkProvider
 
 
@@ -38,6 +38,9 @@ async def run_mcp_server(settings: ServerSettings | None = None) -> None:
     # Register tools
     stackwalk_provider = StackwalkProvider()
     mcp.tool(stackwalk_provider.stackwalk_minidump)
+
+    dump_syms_tool = DumpSymsTool()
+    mcp.tool(dump_syms_tool.extract_symbols)
 
     # Register crash analysis prompts
     crash_provider = CrashAnalysisProvider()
