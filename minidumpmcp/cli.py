@@ -2,9 +2,10 @@ import asyncio
 from typing import Any
 
 import typer
-from fastmcp import Client
 from mcp import Tool
 from rich import print_json
+
+from fastmcp import Client
 
 default_config = {
     "RustMinidumpMcp": {

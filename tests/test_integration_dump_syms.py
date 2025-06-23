@@ -13,7 +13,7 @@ class TestDumpSymsIntegration:
     """Integration tests for DumpSymsTool with real binary."""
 
     @pytest.mark.asyncio
-    async def test_extract_symbols_from_real_binary(self):
+    async def test_extract_symbols_from_real_binary(self) -> None:
         """Test extracting symbols from the minidump-stackwalk binary itself."""
         # Use minidump-stackwalk binary as test file
         stackwalk_path = Path(__file__).parent.parent / "minidumpmcp" / "tools" / "bin" / "minidump-stackwalk-macos"
@@ -67,7 +67,7 @@ class TestDumpSymsIntegration:
             assert module_info["name"] in lines[0]
 
     @pytest.mark.asyncio
-    async def test_extract_symbols_invalid_binary(self, tmp_path):
+    async def test_extract_symbols_invalid_binary(self, tmp_path: Path) -> None:
         """Test error handling with invalid binary file."""
         # Create a text file that's not a valid binary
         invalid_binary = tmp_path / "not_a_binary.txt"
@@ -85,7 +85,7 @@ class TestDumpSymsIntegration:
         assert "error" in result
 
     @pytest.mark.asyncio
-    async def test_concurrent_symbol_extraction(self):
+    async def test_concurrent_symbol_extraction(self) -> None:
         """Test concurrent symbol extraction from same binary."""
         import asyncio
 

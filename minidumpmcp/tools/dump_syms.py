@@ -1,8 +1,6 @@
 """dump_syms tool provider for extracting symbols from binaries."""
 
-import asyncio
 import platform
-import subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional
 

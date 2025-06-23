@@ -1,6 +1,5 @@
 """Tests for dump_syms tool."""
 
-import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -10,7 +9,7 @@ from minidumpmcp.tools.dump_syms import DumpSymsTool, _get_dump_syms_path
 
 
 @pytest.fixture
-def dump_syms_tool():
+def dump_syms_tool() -> DumpSymsTool:
     """Create a DumpSymsTool instance."""
     return DumpSymsTool()
 
@@ -18,26 +17,26 @@ def dump_syms_tool():
 class TestDumpSymsTool:
     """Test cases for DumpSymsTool."""
 
-    def test_get_dump_syms_path_darwin(self):
+    def test_get_dump_syms_path_darwin(self) -> None:
         """Test getting dump_syms binary on macOS."""
         with patch("platform.system", return_value="Darwin"):
             binary_path = _get_dump_syms_path()
             assert binary_path.name == "dump-syms-macos"
 
-    def test_get_dump_syms_path_linux(self):
+    def test_get_dump_syms_path_linux(self) -> None:
         """Test getting dump_syms binary on Linux."""
         with patch("platform.system", return_value="Linux"):
             binary_path = _get_dump_syms_path()
             assert binary_path.name == "dump-syms-linux"
 
-    def test_get_dump_syms_path_windows(self):
+    def test_get_dump_syms_path_windows(self) -> None:
         """Test getting dump_syms binary on Windows."""
         with patch("platform.system", return_value="Windows"):
             binary_path = _get_dump_syms_path()
             assert binary_path.name == "dump-syms-windows.exe"
 
     @pytest.mark.asyncio
-    async def test_extract_symbols_success(self, dump_syms_tool, tmp_path):
+    async def test_extract_symbols_success(self, dump_syms_tool: DumpSymsTool, tmp_path: Path) -> None:
         """Test successful symbol extraction."""
         # Create a fake binary file
         binary_file = tmp_path / "test.exe"
@@ -77,14 +76,14 @@ class TestDumpSymsTool:
                 assert Path(result["symbol_file"]).read_text() == mock_stdout.decode()
 
     @pytest.mark.asyncio
-    async def test_extract_symbols_binary_not_found(self, dump_syms_tool):
+    async def test_extract_symbols_binary_not_found(self, dump_syms_tool: DumpSymsTool) -> None:
         """Test error when binary file doesn't exist."""
         result = await dump_syms_tool.extract_symbols("/nonexistent/file.exe")
         assert result["success"] is False
         assert "Binary file not found" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_extract_symbols_dump_syms_fails(self, dump_syms_tool, tmp_path):
+    async def test_extract_symbols_dump_syms_fails(self, dump_syms_tool: DumpSymsTool, tmp_path: Path) -> None:
         """Test error when dump_syms execution fails."""
         binary_file = tmp_path / "test.exe"
         binary_file.write_text("fake binary content")
@@ -104,7 +103,7 @@ class TestDumpSymsTool:
                 assert "dump_syms execution failed" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_extract_symbols_invalid_output(self, dump_syms_tool, tmp_path):
+    async def test_extract_symbols_invalid_output(self, dump_syms_tool: DumpSymsTool, tmp_path: Path) -> None:
         """Test error when dump_syms produces invalid output."""
         binary_file = tmp_path / "test.exe"
         binary_file.write_text("fake binary content")
@@ -125,7 +124,7 @@ class TestDumpSymsTool:
                 assert "Invalid symbol header" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_extract_symbols_empty_output(self, dump_syms_tool, tmp_path):
+    async def test_extract_symbols_empty_output(self, dump_syms_tool: DumpSymsTool, tmp_path: Path) -> None:
         """Test error when dump_syms produces no output."""
         binary_file = tmp_path / "test.exe"
         binary_file.write_text("fake binary content")
@@ -143,7 +142,7 @@ class TestDumpSymsTool:
                 assert "dump_syms produced no output" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_extract_symbols_default_output_dir(self, dump_syms_tool, tmp_path):
+    async def test_extract_symbols_default_output_dir(self, dump_syms_tool: DumpSymsTool, tmp_path: Path) -> None:
         """Test symbol extraction with default output directory."""
         binary_file = tmp_path / "test.dll"
         binary_file.write_text("fake binary content")
