@@ -65,8 +65,8 @@ def server(
     """Run the MCP server with specified configuration.
 
     Examples:
-        minidump-mcp server                                    # STDIO transport
-        minidump-mcp server --transport streamable-http        # HTTP transport
+        minidump-mcp server                                    # Streamable HTTP transport
+        minidump-mcp server --transport stdio                  # STDIO transport
         minidump-mcp server --transport sse --port 9000        # SSE transport on port 9000
 
     Environment variables can also be used:
