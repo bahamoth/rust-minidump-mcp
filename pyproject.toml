@@ -14,8 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-minidump-mcp = "minidumpmcp.server:main"
-minidump-mcp-cli = "minidumpmcp.cli:main"
+minidump-mcp = "minidumpmcp.cli:app"
 
 [build-system]
 requires = ["hatchling>=1.27.0"]

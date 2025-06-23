@@ -75,7 +75,9 @@ class ServerSettings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(default="INFO", description="Logging level")
 
     # Transport selection
-    transport: Literal["stdio", "streamable-http", "sse"] = Field(default="stdio", description="Transport type to use")
+    transport: Literal["stdio", "streamable-http", "sse"] = Field(
+        default="streamable-http", description="Transport type to use"
+    )
 
     # Transport-specific configurations
     stdio: StdioTransportConfig = Field(default_factory=StdioTransportConfig)

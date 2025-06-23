@@ -20,10 +20,11 @@ def setup_logging(settings: ServerSettings) -> None:
     )
 
 
-async def run_mcp_server() -> None:
+async def run_mcp_server(settings: ServerSettings | None = None) -> None:
     """Run the MCP server with configuration from settings."""
     # Load configuration
-    settings = ServerSettings()
+    if settings is None:
+        settings = ServerSettings()
 
     # Setup logging
     setup_logging(settings)

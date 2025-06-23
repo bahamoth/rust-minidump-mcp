@@ -23,22 +23,22 @@ class TestServerSettings:
         settings = ServerSettings()
 
         assert settings.name == "minidump-mcp"
-        assert settings.transport == "stdio"
+        assert settings.transport == "streamable-http"
         assert settings.log_level == "INFO"
-        assert isinstance(settings.transport_config, StdioTransportConfig)
+        assert isinstance(settings.transport_config, StreamableHttpConfig)
 
     def test_programmatic_configuration(self) -> None:
         """Test programmatic configuration of settings."""
         settings = ServerSettings(
             name="test-server",
-            transport="streamable-http",
+            transport="stdio",
             log_level="DEBUG",
         )
 
         assert settings.name == "test-server"
-        assert settings.transport == "streamable-http"
+        assert settings.transport == "stdio"
         assert settings.log_level == "DEBUG"
-        assert isinstance(settings.transport_config, StreamableHttpConfig)
+        assert isinstance(settings.transport_config, StdioTransportConfig)
 
     def test_transport_config_selection(self) -> None:
         """Test that transport_config returns the correct configuration type."""
