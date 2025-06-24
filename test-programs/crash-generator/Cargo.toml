@@ -1,0 +1,25 @@
+[package]
+name = "crash-generator"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "crash-generator"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+backtrace.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+minidump-writer.workspace = true
+libc.workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+libc.workspace = true
+minidump-writer.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+minidump-writer.workspace = true
+windows.workspace = true

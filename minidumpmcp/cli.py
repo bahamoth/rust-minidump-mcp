@@ -52,6 +52,16 @@ async def list_tools() -> None:
             for arg in prompt.arguments if prompt.arguments else []:
                 typer.echo(f"  - {arg.name}: {arg.description} (required: {arg.required})")
 
+        output = await mcp_client.call_tool(
+            "extract_symbols",
+            {
+                "binary_path": "tests/testdata/symbols.elf/basic.full",
+                "output_dir": "output.txt",
+            },
+        )
+        typer.echo(f"Extracted symbols: {output}")
+
+
 
 @app.command("server")
 def server(
