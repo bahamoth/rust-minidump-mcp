@@ -57,8 +57,8 @@ class TestStackwalkProvider:
         result = await self.provider.stackwalk_minidump(str(minidump_file))
 
         assert result["success"] is False
-        assert "minidump-stackwalk binary not found" in result["error"]
-        assert "uv run just install-tools" in result["error"]
+        assert "Required tool 'minidump-stackwalk' not found" in result["error"]
+        assert "just install-tools" in result["error"]
 
     @pytest.mark.asyncio
     async def test_successful_json_output_with_real_minidump(self) -> None:
@@ -119,7 +119,7 @@ class TestStackwalkProvider:
 
         # Should fail because it's not a valid minidump
         assert result["success"] is False
-        assert "execution failed" in result["error"]
+        assert "Tool 'minidump-stackwalk' failed" in result["error"]
 
     @pytest.mark.asyncio
     async def test_invalid_symbols_path(self, tmp_path: Path) -> None:

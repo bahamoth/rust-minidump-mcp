@@ -100,7 +100,7 @@ class TestDumpSymsTool:
 
                 result = await dump_syms_tool.extract_symbols(str(binary_file))
                 assert result["success"] is False
-                assert "dump_syms execution failed" in result["error"]
+                assert "Tool 'dump_syms' failed" in result["error"]
 
     @pytest.mark.asyncio
     async def test_extract_symbols_invalid_output(self, dump_syms_tool: DumpSymsTool, tmp_path: Path) -> None:

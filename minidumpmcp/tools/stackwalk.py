@@ -5,6 +5,15 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from minidumpmcp.exceptions import (
+    FileValidationError,
+    MinidumpAnalysisError,
+    ToolNotFoundError,
+)
+from minidumpmcp.exceptions import (
+    ToolExecutionError as CommonToolExecutionError,
+)
+
 from ._common import ToolExecutionError, run_subprocess, which
 
 
@@ -47,10 +56,12 @@ class StackwalkProvider:
         # Validate input file
         minidump_file = Path(minidump_path)
         if not minidump_file.exists():
-            return {"error": f"Minidump file not found: {minidump_path}", "success": False}
+            file_error = FileValidationError(minidump_file, "File not found")
+            return {"error": str(file_error), "success": False, "error_code": file_error.error_code}
 
         if not minidump_file.is_file():
-            return {"error": f"Path is not a file: {minidump_path}", "success": False}
+            file_error = FileValidationError(minidump_file, "Path is not a file")
+            return {"error": str(file_error), "success": False, "error_code": file_error.error_code}
 
         # Get absolute path to the minidump-stackwalk binary
         # project_root = Path(__file__).parent.parent.parent
@@ -63,12 +74,11 @@ class StackwalkProvider:
             if which_result:
                 stackwalk_binary = Path(which_result)
             else:
+                tool_error = ToolNotFoundError("minidump-stackwalk", [stackwalk_binary])
                 return {
-                    "error": (
-                        f"minidump-stackwalk binary not found at: {stackwalk_binary}. "
-                        "Run 'uv run just install-tools' first or ensure minidump-stackwalk is on PATH."
-                    ),
+                    "error": str(tool_error),
                     "success": False,
+                    "error_code": tool_error.error_code,
                 }
 
         # Build command
@@ -85,7 +95,8 @@ class StackwalkProvider:
             if symbols_dir.exists() and symbols_dir.is_dir():
                 cmd.extend(["--symbols-path", symbols_dir.absolute()])
             else:
-                return {"error": f"Symbols directory not found or not a directory: {symbols_path}", "success": False}
+                symbols_error = FileValidationError(symbols_dir, "Symbols directory not found or not a directory")
+                return {"error": str(symbols_error), "success": False, "error_code": symbols_error.error_code}
 
         try:
             # Execute minidump-stackwalk with timeout using async helper
@@ -97,17 +108,50 @@ class StackwalkProvider:
                     parsed_output = json.loads(stdout)
                     return {"success": True, "data": parsed_output, "command": " ".join(str(c) for c in cmd)}
                 except json.JSONDecodeError as e:
-                    return {"error": f"Failed to parse JSON output: {e}", "raw_output": stdout, "success": False}
+                    parse_error = MinidumpAnalysisError(
+                        minidump_file,
+                        "Failed to parse analysis output",
+                        {"parse_error": str(e), "raw_output": stdout[:500]},  # Limit output size
+                    )
+                    return {"error": str(parse_error), "success": False, "error_code": parse_error.error_code}
             else:
                 # Return raw text output
                 return {"success": True, "data": stdout, "command": " ".join(str(c) for c in cmd)}
 
         except ToolExecutionError as e:
+            # Convert common tool error to our custom error
+            error_msg = str(e)
+            exit_code = 1  # Default exit code
+            stderr = ""
+
+            # Try to extract exit code from error message
+            if "exit-code" in error_msg:
+                try:
+                    exit_code = int(error_msg.split("exit-code")[1].split()[0])
+                except (IndexError, ValueError):
+                    pass
+
+            # Extract stderr if present
+            if "\n" in error_msg:
+                stderr = error_msg.split("\n", 1)[1]
+
+            exec_error = CommonToolExecutionError(
+                "minidump-stackwalk",
+                [str(c) for c in cmd],
+                exit_code,
+                stderr,
+            )
             return {
-                "error": f"minidump-stackwalk execution failed: {e}",
+                "error": str(exec_error),
                 "command": " ".join(str(c) for c in cmd),
                 "success": False,
+                "error_code": exec_error.error_code,
             }
 
         except Exception as e:
-            return {"error": f"Unexpected error: {str(e)}", "success": False}
+            unexpected_error = MinidumpAnalysisError(
+                minidump_file,
+                "Unexpected error during analysis",
+                {"exception_type": type(e).__name__, "exception_message": str(e)},
+            )
+            return {"error": str(unexpected_error), "success": False, "error_code": unexpected_error.error_code}

@@ -1,66 +1,165 @@
 import asyncio
-from typing import Any
+import os
+from typing import Any, Optional
 
 import typer
 from mcp import Tool
 from rich import print_json
 
 from fastmcp import Client
-
-default_config = {
-    "RustMinidumpMcp": {
-        "url": "http://localhost:8000/mcp",
-        "transport": "streamable-http",
-    }
-}
+from minidumpmcp.config.client_settings import ClientSettings
+from minidumpmcp.exceptions import ConfigurationError
+from minidumpmcp.exceptions import ConnectionError as MCPConnectionError
 
 app = typer.Typer()
-mcp_client: Client[Any] = Client(default_config)
 
 
 @app.command("client")
-def client() -> None:
-    """Run the MCP client."""
-    typer.echo("Starting MCP client...")
-    asyncio.run(list_tools())
+def client(
+    url: Optional[str] = typer.Option(None, "--url", "-u", help="Server URL (overrides env/config)"),
+    transport: Optional[str] = typer.Option(
+        None,
+        "--transport",
+        "-t",
+        help="Transport type: stdio, streamable-http, sse (overrides env/config)",
+    ),
+    timeout: Optional[float] = typer.Option(
+        None,
+        "--timeout",
+        help="Request timeout in seconds (overrides env/config)",
+    ),
+) -> None:
+    """Run the MCP client.
+
+    Examples:
+        minidump-mcp client                                           # Use defaults or env vars
+        minidump-mcp client --url http://localhost:8080/mcp          # Custom URL
+        minidump-mcp client --transport stdio                         # STDIO transport
+        minidump-mcp client --timeout 60                              # 60 second timeout
+
+    Environment variables can also be used:
+        MINIDUMP_MCP_CLIENT_URL=http://localhost:8080/mcp
+        MINIDUMP_MCP_CLIENT_TRANSPORT=streamable-http
+        MINIDUMP_MCP_CLIENT_TIMEOUT=60
+    """
+    # Create settings with CLI arguments overriding defaults and env vars
+    settings_kwargs: dict[str, Any] = {}
+
+    if url is not None:
+        settings_kwargs["url"] = url
+    if transport is not None:
+        settings_kwargs["transport"] = transport
+    if timeout is not None:
+        settings_kwargs["timeout"] = timeout
+
+    # Create client settings
+    try:
+        settings = ClientSettings(**settings_kwargs)
+    except ValueError as e:
+        # Convert pydantic validation errors to our custom errors
+        error_str = str(e)
+        if "transport" in error_str:
+            error = ConfigurationError("transport", transport or "invalid", error_str)
+        elif "timeout" in error_str:
+            error = ConfigurationError("timeout", timeout or "invalid", error_str)
+        else:
+            error = ConfigurationError("client", settings_kwargs, error_str)
+
+        typer.echo(f"\nError: {error.message}", err=True)
+        if error.suggestion:
+            typer.echo(f"Suggestion: {error.suggestion}", err=True)
+        raise typer.Exit(1) from e
+
+    # Display connection info
+    typer.echo("Connecting to server...")
+    typer.echo(f"  Transport: {settings.transport}")
+    if settings.transport != "stdio":
+        typer.echo(f"  URL: {settings.url}")
+    typer.echo(f"  Timeout: {settings.timeout}s")
+
+    asyncio.run(run_client(settings))
 
 
-async def list_tools() -> None:
-    async with mcp_client:
-        tools: list[Tool] = await mcp_client.list_tools()
+async def run_client(settings: ClientSettings) -> None:
+    """Run the client with given settings."""
+    mcp_client: Client[Any] = Client(settings.config_dict)
 
-        typer.echo("Available tools:")
-        for tool in tools:
-            typer.echo(f"- {tool.name}: {tool.description}")
+    try:
+        async with mcp_client:
+            tools: list[Tool] = await mcp_client.list_tools()
+    except Exception as e:
+        # Create appropriate connection error
+        error_str = str(e).lower()
+        reason = str(e)
 
-        output = await mcp_client.call_tool(
-            "stackwalk_minidump",
-            {
-                "minidump_path": "tests/testdata/test.dmp",
-                "symbols_path": "tests/testdata/symbols/test_app.pdb",
-            },
+        if "connection refused" in error_str:
+            reason = "Connection refused"
+        elif "timeout" in error_str:
+            reason = "Connection timeout"
+        elif "404" in error_str or "not found" in error_str:
+            reason = "Endpoint not found"
+
+        error = MCPConnectionError(
+            settings.url if settings.transport != "stdio" else "stdio://",
+            reason,
+            settings.transport,
         )
-        typer.echo("Callstacks:")
-        for callstack in output:
-            if callstack.type == "text":
-                print_json(callstack.text)
 
-        prompts = await mcp_client.list_prompts()
-        typer.echo("Available prompts:")
-        for prompt in prompts:
-            typer.echo(f"- {prompt.name}: {prompt.description}")
-            for arg in prompt.arguments if prompt.arguments else []:
-                typer.echo(f"  - {arg.name}: {arg.description} (required: {arg.required})")
+        typer.echo(f"\nError: {error.message}", err=True)
+        if error.context:
+            for key, value in error.context.items():
+                typer.echo(f"  {key}: {value}", err=True)
 
-        output = await mcp_client.call_tool(
-            "extract_symbols",
-            {
-                "binary_path": "tests/testdata/symbols.elf/basic.full",
-                "output_dir": "output.txt",
-            },
-        )
-        typer.echo(f"Extracted symbols: {output}")
+        if error.suggestion:
+            typer.echo(f"\nSuggestion: {error.suggestion}", err=True)
 
+        raise typer.Exit(1) from e
+
+    typer.echo("\nAvailable tools:")
+    for tool in tools:
+        typer.echo(f"- {tool.name}: {tool.description}")
+
+    # Only run demo if test data exists
+    test_dmp = "tests/testdata/test.dmp"
+    if os.path.exists(test_dmp):
+        typer.echo("\nRunning stackwalk demo...")
+        try:
+            output = await mcp_client.call_tool(
+                "stackwalk_minidump",
+                {
+                    "minidump_path": test_dmp,
+                    "symbols_path": "tests/testdata/symbols/test_app.pdb",
+                },
+            )
+            typer.echo("\nCallstacks:")
+            for callstack in output:
+                if callstack.type == "text":
+                    print_json(callstack.text)
+        except Exception as e:
+            typer.echo(f"Demo failed: {e}", err=True)
+
+    prompts = await mcp_client.list_prompts()
+    typer.echo("\nAvailable prompts:")
+    for prompt in prompts:
+        typer.echo(f"- {prompt.name}: {prompt.description}")
+        for arg in prompt.arguments if prompt.arguments else []:
+            typer.echo(f"  - {arg.name}: {arg.description} (required: {arg.required})")
+
+    # Only run symbol extraction demo if test data exists
+    test_elf = "tests/testdata/symbols.elf/basic.full"
+    if os.path.exists(test_elf):
+        typer.echo("\nRunning symbol extraction demo...")
+        try:
+            output = await mcp_client.call_tool(
+                "extract_symbols",
+                {
+                    "binary_path": test_elf,
+                    "output_dir": "output.txt",
+                },
+            )
+            typer.echo(f"Extracted symbols: {output}")
+        except Exception as e:
+            typer.echo(f"Demo failed: {e}", err=True)
 
 
 @app.command("server")
@@ -85,8 +184,6 @@ def server(
         MINIDUMP_MCP_STREAMABLE_HTTP__HOST=0.0.0.0
         MINIDUMP_MCP_STREAMABLE_HTTP__PORT=8080
     """
-    import os
-
     from minidumpmcp.config import ServerSettings
 
     # Create settings with CLI arguments overriding defaults and env vars

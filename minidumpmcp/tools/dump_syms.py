@@ -4,6 +4,15 @@ import platform
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from minidumpmcp.exceptions import (
+    FileValidationError,
+    SymbolExtractionError,
+    ToolNotFoundError,
+)
+from minidumpmcp.exceptions import (
+    ToolExecutionError as CommonToolExecutionError,
+)
+
 from ._common import ToolExecutionError, run_subprocess
 
 
@@ -55,7 +64,8 @@ class DumpSymsTool:
         try:
             binary_file = Path(binary_path).resolve()
             if not binary_file.exists():
-                return {"success": False, "error": f"Binary file not found: {binary_file}"}
+                file_error = FileValidationError(binary_file, "Binary file not found")
+                return {"success": False, "error": str(file_error), "error_code": file_error.error_code}
 
             # Set output directory
             if output_dir:
@@ -66,11 +76,18 @@ class DumpSymsTool:
             output_path.mkdir(parents=True, exist_ok=True)
 
             # Get dump_syms binary
-            dump_syms = _get_dump_syms_path()
+            try:
+                dump_syms = _get_dump_syms_path()
+            except ValueError as e:
+                platform_error = SymbolExtractionError(binary_file, str(e))
+                return {"success": False, "error": str(platform_error), "error_code": platform_error.error_code}
+
             if not dump_syms.exists():
+                tool_error = ToolNotFoundError("dump_syms", [dump_syms])
                 return {
                     "success": False,
-                    "error": f"dump_syms binary not found at {dump_syms}. Run 'just install-tools' to install it.",
+                    "error": str(tool_error),
+                    "error_code": tool_error.error_code,
                 }
 
             # Run dump_syms to extract symbols
@@ -79,7 +96,8 @@ class DumpSymsTool:
 
             # Parse the symbol data
             if not stdout:
-                return {"success": False, "error": "dump_syms produced no output"}
+                output_error = SymbolExtractionError(binary_file, "dump_syms produced no output")
+                return {"success": False, "error": str(output_error), "error_code": output_error.error_code}
 
             # Extract module info from first line
             # Format: MODULE <os> <arch> <id> <name>
@@ -87,7 +105,11 @@ class DumpSymsTool:
             parts = first_line.split()
 
             if len(parts) < 5 or parts[0] != "MODULE":
-                return {"success": False, "error": f"Invalid symbol header: {first_line}"}
+                header_error = SymbolExtractionError(
+                    binary_file,
+                    f"Invalid symbol header format. Expected 'MODULE <os> <arch> <id> <name>', got: {first_line}",
+                )
+                return {"success": False, "error": str(header_error), "error_code": header_error.error_code}
 
             module_os = parts[1]
             module_arch = parts[2]
@@ -110,6 +132,32 @@ class DumpSymsTool:
             }
 
         except ToolExecutionError as e:
-            return {"success": False, "error": f"dump_syms execution failed: {str(e)}"}
+            # Convert common tool error to our custom error
+            error_msg = str(e)
+            exit_code = 1  # Default exit code
+            stderr = ""
+
+            # Try to extract exit code from error message
+            if "exit-code" in error_msg:
+                try:
+                    exit_code = int(error_msg.split("exit-code")[1].split()[0])
+                except (IndexError, ValueError):
+                    pass
+
+            # Extract stderr if present
+            if "\n" in error_msg:
+                stderr = error_msg.split("\n", 1)[1]
+
+            exec_error = CommonToolExecutionError(
+                "dump_syms",
+                [str(c) for c in cmd],
+                exit_code,
+                stderr,
+            )
+            return {"success": False, "error": str(exec_error), "error_code": exec_error.error_code}
         except Exception as e:
-            return {"success": False, "error": f"Failed to extract symbols: {str(e)}"}
+            unexpected_error = SymbolExtractionError(
+                binary_file,
+                f"Unexpected error: {type(e).__name__} - {str(e)}",
+            )
+            return {"success": False, "error": str(unexpected_error), "error_code": unexpected_error.error_code}
