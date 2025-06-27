@@ -12,10 +12,15 @@ An MCP (Model Context Protocol) server that empowers AI agents and developers to
 
 - **Minidump Analysis**: Analyze Windows crash dump files (`.dmp`) to get detailed stack traces
 - **Symbol Extraction**: Extract Breakpad symbols from binaries (PDB, DWARF formats)
-- **Multiple Transports**: Support for stdio, HTTP, and SSE transports
+- **Multiple Transports**: Support for stdio, Streamable HTTP, and SSE transports
 - **AI-Powered Analysis**: Built-in prompts for AI-assisted crash debugging
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Comprehensive Error Handling**: Detailed error messages with actionable suggestions
+
+## 📋 Prerequisites
+
+- Python 3.11 or higher
+- [uv](https://github.com/astral-sh/uv) package manager
 
 ## 🚀 Quick Start
 
@@ -44,7 +49,7 @@ uv sync
 
 2. Run the server:
 ```bash
-# Default: HTTP transport on port 8000
+# Default: Streamable HTTP transport on port 8000
 minidump-mcp server
 
 # Or specify transport explicitly
@@ -60,18 +65,21 @@ minidump-mcp client
 
 ### Running the Server
 
-#### HTTP Transport (Default)
+#### Streamable HTTP Transport (Default)
 ```bash
 # Default configuration
 minidump-mcp server
 
 # With custom port
 minidump-mcp server --port 8080
+
+# Explicit transport specification
+minidump-mcp server --transport streamable-http
 ```
 
 #### STDIO Transport
 ```bash
-# For AI agent integration
+# For AI agent integration (Claude Desktop, VS Code, etc.)
 minidump-mcp server --transport stdio
 ```
 
@@ -323,7 +331,7 @@ rust-minidump-mcp/
 ### Transport Support
 
 - **stdio**: Standard input/output for CLI integration
-- **streamable-http**: HTTP-based transport for web services
+- **streamable-http**: Streamable HTTP transport for web services
 - **sse**: Server-Sent Events for real-time streaming
 
 ## 🧪 Development
