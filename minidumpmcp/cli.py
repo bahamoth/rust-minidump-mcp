@@ -3,10 +3,10 @@ import os
 from typing import Any, Optional
 
 import typer
+from fastmcp import Client
 from mcp import Tool
 from rich import print_json
 
-from fastmcp import Client
 from minidumpmcp.config.client_settings import ClientSettings
 from minidumpmcp.exceptions import ConfigurationError
 from minidumpmcp.exceptions import ConnectionError as MCPConnectionError

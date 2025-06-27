@@ -5,6 +5,7 @@ import logging
 from typing import cast
 
 from fastmcp import FastMCP
+
 from minidumpmcp.config import ServerSettings
 from minidumpmcp.config.settings import SseTransportConfig, StreamableHttpConfig
 from minidumpmcp.prompts import CrashAnalysisProvider
