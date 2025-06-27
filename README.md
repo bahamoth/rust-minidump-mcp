@@ -50,6 +50,24 @@ This installs:
 
 ## 🚀 Quick Start
 
+### Method 1: Using uvx (No Installation Required)
+
+You can run the tool directly without installation using [uvx](https://github.com/astral-sh/uv):
+
+```bash
+# From the project directory
+uvx --from . minidump-mcp server
+uvx --from . minidump-mcp client
+
+# After PyPI deployment (future)
+uvx minidump-mcp server
+uvx minidump-mcp client
+```
+
+### Method 2: Traditional Installation
+
+After installation with `uv sync`, you can use the standard command:
+
 ### Running the Server
 
 #### STDIO Transport (default)

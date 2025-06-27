@@ -30,20 +30,27 @@ pytest tests/test_stackwalk.py  # Run specific test file
 
 ### Running the Server
 ```bash
-# STDIO transport (default)
+# Using uvx (no installation required) - from project directory
+uvx --from . minidump-mcp server
+uvx --from . minidump-mcp server --transport streamable-http --port 8000
+uvx --from . minidump-mcp server --transport sse --port 9000
+
+# Traditional method (after uv sync)
 minidump-mcp server
-
-# HTTP transport
 minidump-mcp server --transport streamable-http --port 8000
-
-# SSE transport  
 minidump-mcp server --transport sse --port 9000
 ```
 
 ### Running the Client
 ```bash
+# Using uvx (no installation required) - from project directory
+uvx --from . minidump-mcp client
+
+# Traditional method (after uv sync)
 minidump-mcp client  # Test client that connects to server and demos tools
 ```
+
+Note: After PyPI deployment, the uvx commands will simplify to `uvx minidump-mcp server` and `uvx minidump-mcp client`.
 
 ## Architecture
 
