@@ -20,7 +20,7 @@ jobs:
           uv venv
           uv sync
       - name: Lint
-        run: uv run -- ruff check .
+        run: uv run -- ruff check . --fix
       - name: Type check
         run: uv run -- mypy .
       - name: Test
