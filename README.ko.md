@@ -32,12 +32,13 @@ git clone https://github.com/bahamoth/rust-minidump-mcp.git
 cd rust-minidump-mcp
 ```
 
-### 2. 가상 환경 생성 및 의존성 설치
+### 2. 의존성 설치
 
 ```bash
-uv venv
 uv sync
 ```
+
+이 명령은 자동으로 가상 환경을 생성하고 모든 의존성을 설치합니다.
 
 ### 3. Rust 도구 설치
 

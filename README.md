@@ -32,12 +32,13 @@ git clone https://github.com/bahamoth/rust-minidump-mcp.git
 cd rust-minidump-mcp
 ```
 
-### 2. Create virtual environment and install dependencies
+### 2. Install dependencies
 
 ```bash
-uv venv
 uv sync
 ```
+
+This will automatically create a virtual environment and install all dependencies.
 
 ### 3. Install Rust tools
 
