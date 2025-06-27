@@ -42,7 +42,7 @@ minidump-mcp server
 minidump-mcp server --transport streamable-http --port 8000
 ```
 
-3. Run the client(for development):
+3. Run the client:
 ```bash
 minidump-mcp client
 ```
@@ -226,19 +226,30 @@ Symbol files map memory addresses to human-readable function names and source lo
 
 ### Analysis Workflow
 
-1. **Crash occurs**: Application generates a minidump
-2. **Extract symbols**: Use `extract_symbols` on the crashed binary
-3. **Analyze dump**: Use `stackwalk_minidump` with symbols
-4. **Interpret results**: Get function names, file paths, and line numbers
+1. **Before crash**: Extract symbols from your application binary
+   - Use `dump_syms` to convert PDB/DWARF debug info to Breakpad format
+   
+2. **After crash**: Analyze the minidump file
+   - Use `minidump-stackwalk` with the symbols to get readable stack traces
 
-Example workflow:
-```bash
-# 1. Extract symbols from your application
-minidump-mcp extract-symbols /path/to/app.exe --output ./symbols
+Example using MCP tools through an AI agent:
+```python
+# 1. Extract symbols from application binary (do this when building your app)
+result = await extract_symbols(
+    binary_path="/path/to/app.exe",  # or .pdb file
+    output_dir="./symbols"
+)
 
-# 2. Analyze the crash dump
-minidump-mcp analyze /path/to/crash.dmp --symbols ./symbols
+# 2. When a crash occurs, analyze the minidump
+result = await stackwalk_minidump(
+    minidump_path="/path/to/crash.dmp",
+    symbols_path="./symbols"
+)
 ```
+
+The tools work behind the scenes:
+- `dump_syms`: Extracts debug symbols from binaries (EXE/DLL/PDB on Windows, ELF on Linux)
+- `minidump-stackwalk`: Analyzes crash dumps using the extracted symbols
 
 ### Symbol Directory Structure
 

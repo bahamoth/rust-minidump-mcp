@@ -226,19 +226,30 @@ Minidump 파일(`.dmp`)은 Windows 애플리케이션이 크래시할 때 생성
 
 ### 분석 워크플로우
 
-1. **크래시 발생**: 애플리케이션이 minidump 생성
-2. **심볼 추출**: 크래시한 바이너리에서 `extract_symbols` 사용
-3. **덤프 분석**: 심볼과 함께 `stackwalk_minidump` 사용
-4. **결과 해석**: 함수 이름, 파일 경로, 줄 번호 확인
+1. **크래시 전**: 애플리케이션 바이너리에서 심볼 추출
+   - `dump_syms`를 사용하여 PDB/DWARF 디버그 정보를 Breakpad 형식으로 변환
+   
+2. **크래시 후**: minidump 파일 분석
+   - 심볼과 함께 `minidump-stackwalk`를 사용하여 읽을 수 있는 스택 트레이스 생성
 
-워크플로우 예시:
-```bash
-# 1. 애플리케이션에서 심볼 추출
-minidump-mcp extract-symbols /path/to/app.exe --output ./symbols
+AI 에이전트를 통한 MCP 도구 사용 예시:
+```python
+# 1. 애플리케이션 바이너리에서 심볼 추출 (앱 빌드 시 수행)
+result = await extract_symbols(
+    binary_path="/path/to/app.exe",  # 또는 .pdb 파일
+    output_dir="./symbols"
+)
 
-# 2. 크래시 덤프 분석
-minidump-mcp analyze /path/to/crash.dmp --symbols ./symbols
+# 2. 크래시 발생 시 minidump 분석
+result = await stackwalk_minidump(
+    minidump_path="/path/to/crash.dmp",
+    symbols_path="./symbols"
+)
 ```
+
+내부적으로 작동하는 도구들:
+- `dump_syms`: 바이너리에서 디버그 심볼 추출 (Windows의 EXE/DLL/PDB, Linux의 ELF)
+- `minidump-stackwalk`: 추출된 심볼을 사용하여 크래시 덤프 분석
 
 ### 심볼 디렉토리 구조
 
