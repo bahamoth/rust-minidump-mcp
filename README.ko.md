@@ -8,55 +8,11 @@
 
 AI 에이전트와 개발자가 애플리케이션 크래시를 이해할 수 있도록 돕는 MCP (Model Context Protocol) 서버입니다. 강력한 Rust 기반 크래시 분석 도구와 AI 기능을 연결하여, 알아보기 어려운 크래시 덤프를 명확하고 실행 가능한 인사이트로 변환합니다. 이를 통해 근본 원인을 빠르게 파악하고 중요한 문제를 해결할 수 있습니다.
 
-## 🚀 주요 기능
-
-- **Minidump 분석**: Windows 크래시 덤프 파일(`.dmp`)을 분석하여 상세한 스택 트레이스 제공
-- **심볼 추출**: 바이너리 파일(PDB, DWARF 형식)에서 Breakpad 심볼 추출
-- **다중 전송 방식**: stdio, HTTP, SSE 전송 방식 지원
-- **AI 기반 분석**: AI 지원 크래시 디버깅을 위한 내장 프롬프트
-- **크로스 플랫폼**: Windows, macOS, Linux에서 동작
-- **포괄적인 오류 처리**: 실행 가능한 제안과 함께 상세한 오류 메시지 제공
-
-## 📋 사전 요구사항
-
-- Python 3.11 이상
-- [uv](https://github.com/astral-sh/uv) 패키지 관리자
-- [just](https://github.com/casey/just) 명령 실행기 (선택사항)
-
-## 🛠️ 설치
-
-### 1. 저장소 복제
-
-```bash
-git clone https://github.com/bahamoth/rust-minidump-mcp.git
-cd rust-minidump-mcp
-```
-
-### 2. 의존성 설치
-
-```bash
-uv sync
-```
-
-이 명령은 자동으로 가상 환경을 생성하고 모든 의존성을 설치합니다.
-
-### 3. Rust 도구 설치
-
-프로젝트에는 사전 컴파일된 Rust 바이너리가 포함되어 있습니다. 다음 명령으로 설치하세요:
-
-```bash
-just install-tools
-```
-
-설치되는 도구:
-- `minidump-stackwalk`: minidump 파일 분석용
-- `dump_syms`: Breakpad 심볼 추출용
-
 ## 🚀 빠른 시작
 
-### 방법 1: uvx 사용 (설치 불필요)
+### 방법 1: uvx 사용
 
-[uvx](https://github.com/astral-sh/uv)를 사용하여 설치 없이 도구를 직접 실행할 수 있습니다:
+설치 없이 직접 실행:
 
 ```bash
 # 프로젝트 디렉토리에서
@@ -70,22 +26,49 @@ uvx minidump-mcp client
 
 ### 방법 2: 전통적인 설치
 
-`uv sync`로 설치 후 표준 명령 사용:
+1. 복제 및 설치:
+```bash
+git clone https://github.com/bahamoth/rust-minidump-mcp.git
+cd rust-minidump-mcp
+uv sync
+```
+
+2. 서버 실행:
+```bash
+# 기본값: HTTP 전송, 포트 8000
+minidump-mcp server
+
+# 또는 전송 방식 명시
+minidump-mcp server --transport streamable-http --port 8000
+```
+
+3. 클라이언트 실행:
+```bash
+minidump-mcp client
+```
+
+## 📚 사용법
 
 ### 서버 실행
 
-#### STDIO 전송 (기본값)
+#### HTTP 전송 (기본값)
 ```bash
+# 기본 설정
 minidump-mcp server
+
+# 사용자 지정 포트
+minidump-mcp server --port 8080
 ```
 
-#### HTTP 전송
+#### STDIO 전송
 ```bash
-minidump-mcp server --transport streamable-http --port 8000
+# AI 에이전트 통합용
+minidump-mcp server --transport stdio
 ```
 
 #### SSE 전송
 ```bash
+# 실시간 스트리밍용
 minidump-mcp server --transport sse --port 9000
 ```
 
@@ -139,6 +122,63 @@ result = await extract_symbols(
 # 생성됨: ./symbols/app.exe/1234ABCD/app.exe.sym
 ```
 
+## 🤖 AI 에이전트 통합
+
+### Claude Desktop
+
+Claude Desktop 설정 파일에 추가:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`  
+**Linux**: `~/.config/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "minidump-mcp": {
+      "command": "uvx",
+      "args": ["--from", ".", "minidump-mcp", "server", "--transport", "stdio"],
+      "cwd": "/path/to/rust-minidump-mcp"
+    }
+  }
+}
+```
+
+PyPI 배포 후에는 다음과 같이 단순화할 수 있습니다:
+```json
+{
+  "mcpServers": {
+    "minidump-mcp": {
+      "command": "uvx",
+      "args": ["minidump-mcp", "server", "--transport", "stdio"]
+    }
+  }
+}
+```
+
+### Claude Code
+
+Claude Code는 MCP 서버를 자동으로 감지합니다. 설치 후:
+
+1. 프로젝트 디렉토리에서 Claude Code 열기
+2. minidump-mcp 서버가 크래시 분석 작업에 사용 가능
+
+### VS Code with Continue.dev
+
+Continue 설정 파일(`~/.continue/config.json`)에 추가:
+
+```json
+{
+  "models": [...],
+  "mcpServers": {
+    "minidump-mcp": {
+      "command": "uvx",
+      "args": ["--from", "/path/to/rust-minidump-mcp", "minidump-mcp", "server", "--transport", "stdio"]
+    }
+  }
+}
+```
+
 ## 🔧 구성
 
 ### 환경 변수
@@ -165,6 +205,111 @@ MINIDUMP_MCP_CLIENT_TIMEOUT=30.0
 2. 환경 변수
 3. `.env` 파일
 4. 기본값 (최하위)
+
+## 📊 크래시 분석 이해하기
+
+### Minidump 파일
+
+Minidump 파일(`.dmp`)은 Windows 애플리케이션이 크래시할 때 생성되는 압축된 크래시 보고서입니다. 포함된 내용:
+- 스레드 정보 및 스택 트레이스
+- CPU 레지스터 상태
+- 로드된 모듈 목록
+- 예외 정보
+- 시스템 정보
+
+### 심볼 파일
+
+심볼 파일은 메모리 주소를 사람이 읽을 수 있는 함수 이름과 소스 위치로 매핑합니다:
+- **PDB 파일**: Windows 디버그 심볼
+- **DWARF**: Linux/macOS 디버그 정보
+- **Breakpad 형식**: 크로스 플랫폼 심볼 형식 (`.sym`)
+
+### 분석 워크플로우
+
+1. **크래시 발생**: 애플리케이션이 minidump 생성
+2. **심볼 추출**: 크래시한 바이너리에서 `extract_symbols` 사용
+3. **덤프 분석**: 심볼과 함께 `stackwalk_minidump` 사용
+4. **결과 해석**: 함수 이름, 파일 경로, 줄 번호 확인
+
+워크플로우 예시:
+```bash
+# 1. 애플리케이션에서 심볼 추출
+minidump-mcp extract-symbols /path/to/app.exe --output ./symbols
+
+# 2. 크래시 덤프 분석
+minidump-mcp analyze /path/to/crash.dmp --symbols ./symbols
+```
+
+### 심볼 디렉토리 구조
+
+Breakpad 심볼은 특정 디렉토리 구조를 따릅니다:
+```
+symbols/
+└── app.exe/
+    └── 1234ABCD5678EF90/  # 모듈 ID
+        └── app.exe.sym    # 심볼 파일
+```
+
+## 🛠️ 설치 상세 정보
+
+### 사전 요구사항
+
+- Python 3.11 이상
+- [uv](https://github.com/astral-sh/uv) 패키지 관리자
+- [just](https://github.com/casey/just) 명령 실행기 (선택사항)
+
+### 소스에서 설치
+
+1. 저장소 복제:
+```bash
+git clone https://github.com/bahamoth/rust-minidump-mcp.git
+cd rust-minidump-mcp
+```
+
+2. 의존성 설치:
+```bash
+uv sync
+```
+
+이 명령은 자동으로 가상 환경을 생성하고 모든 의존성을 설치합니다.
+
+3. Rust 도구 설치 (선택사항):
+
+프로젝트에는 사전 컴파일된 Rust 바이너리가 `minidumpmcp/tools/bin/`에 포함되어 있습니다. 도구 실행 시 자동으로 사용됩니다.
+
+업데이트나 재설치가 필요한 경우:
+```bash
+just install-tools
+```
+
+## 🚀 주요 기능
+
+- **Minidump 분석**: Windows 크래시 덤프 파일(`.dmp`)을 분석하여 상세한 스택 트레이스 제공
+- **심볼 추출**: 바이너리 파일(PDB, DWARF 형식)에서 Breakpad 심볼 추출
+- **다중 전송 방식**: stdio, HTTP, SSE 전송 방식 지원
+- **AI 기반 분석**: AI 지원 크래시 디버깅을 위한 내장 프롬프트
+- **크로스 플랫폼**: Windows, macOS, Linux에서 동작
+- **포괄적인 오류 처리**: 실행 가능한 제안과 함께 상세한 오류 메시지 제공
+
+## 🐛 문제 해결
+
+### 일반적인 문제
+
+1. **바이너리를 찾을 수 없음 오류**
+   ```
+   해결: 'just install-tools'를 실행하여 필요한 바이너리 설치
+   ```
+
+2. **연결 거부 오류**
+   ```
+   해결: 서버가 올바른 포트에서 실행 중인지 확인
+   확인: minidump-mcp server --transport streamable-http --port 8000
+   ```
+
+3. **잘못된 minidump 형식**
+   ```
+   해결: 파일이 유효한 Windows minidump (.dmp) 파일인지 확인
+   ```
 
 ## 🏗️ 아키텍처
 
@@ -237,30 +382,6 @@ just --list
 - `just lint`: 린터 실행
 - `just format`: 코드 포맷
 
-## 🐛 문제 해결
-
-### 일반적인 문제
-
-1. **바이너리를 찾을 수 없음 오류**
-   ```
-   해결: 'just install-tools'를 실행하여 필요한 바이너리 설치
-   ```
-
-2. **연결 거부 오류**
-   ```
-   해결: 서버가 올바른 포트에서 실행 중인지 확인
-   확인: minidump-mcp server --transport streamable-http --port 8000
-   ```
-
-3. **잘못된 minidump 형식**
-   ```
-   해결: 파일이 유효한 Windows minidump (.dmp) 파일인지 확인
-   ```
-
-## 📝 라이선스
-
-이 프로젝트는 MIT 라이선스로 배포됩니다 - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
-
 ## 🤝 기여하기
 
 기여를 환영합니다! Pull Request를 제출해 주세요.
@@ -271,51 +392,9 @@ just --list
 4. 브랜치에 푸시 (`git push origin feature/AmazingFeature`)
 5. Pull Request 열기
 
-## 📊 크래시 분석 이해하기
+## 📝 라이선스
 
-### Minidump 파일
-
-Minidump 파일(`.dmp`)은 Windows 애플리케이션이 크래시할 때 생성되는 압축된 크래시 보고서입니다. 포함된 내용:
-- 스레드 정보 및 스택 트레이스
-- CPU 레지스터 상태
-- 로드된 모듈 목록
-- 예외 정보
-- 시스템 정보
-
-### 심볼 파일
-
-심볼 파일은 메모리 주소를 사람이 읽을 수 있는 함수 이름과 소스 위치로 매핑합니다:
-- **PDB 파일**: Windows 디버그 심볼
-- **DWARF**: Linux/macOS 디버그 정보
-- **Breakpad 형식**: 크로스 플랫폼 심볼 형식 (`.sym`)
-
-### 분석 워크플로우
-
-1. **크래시 발생**: 애플리케이션이 minidump 생성
-2. **심볼 추출**: 크래시한 바이너리에서 `extract_symbols` 사용
-3. **덤프 분석**: 심볼과 함께 `stackwalk_minidump` 사용
-4. **결과 해석**: 함수 이름, 파일 경로, 줄 번호 확인
-
-워크플로우 예시:
-```bash
-# 1. 애플리케이션에서 심볼 추출
-minidump-mcp extract-symbols /path/to/app.exe --output ./symbols
-
-# 2. 크래시 덤프 분석
-minidump-mcp analyze /path/to/crash.dmp --symbols ./symbols
-```
-
-## 📁 심볼 디렉토리 구조
-
-Breakpad 심볼은 특정 디렉토리 구조를 따릅니다:
-```
-symbols/
-└── app.exe/
-    └── 1234ABCD5678EF90/  # 모듈 ID
-        └── app.exe.sym    # 심볼 파일
-```
-
-이 구조를 통해 분석기가 크래시 덤프의 각 모듈에 대한 올바른 심볼을 자동으로 찾을 수 있습니다.
+이 프로젝트는 MIT 라이선스로 배포됩니다 - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
 ## 🔗 관련 프로젝트
 
