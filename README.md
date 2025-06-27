@@ -1,7 +1,10 @@
 # Rust Minidump MCP
 
+[![CI](https://github.com/bahamoth/rust-minidump-mcp/workflows/CI/badge.svg)](https://github.com/bahamoth/rust-minidump-mcp/actions/workflows/ci.yml)
 [![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-purple)](https://modelcontextprotocol.io)
+[![uv](https://img.shields.io/badge/uv-package%20manager-yellow)](https://github.com/astral-sh/uv)
 
 A Python MCP (Model Context Protocol) server that provides minidump crash analysis capabilities. This project uses FastMCP to create both server and client interfaces for analyzing Windows crash dump files using Rust-based tools.
 
