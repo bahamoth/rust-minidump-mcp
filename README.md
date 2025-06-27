@@ -6,7 +6,7 @@
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-purple)](https://modelcontextprotocol.io)
 [![uv](https://img.shields.io/badge/uv-package%20manager-yellow)](https://github.com/astral-sh/uv)
 
-A Python MCP (Model Context Protocol) server that provides minidump crash analysis capabilities. This project uses FastMCP to create both server and client interfaces for analyzing Windows crash dump files using Rust-based tools.
+An MCP (Model Context Protocol) server that empowers AI agents and developers to understand application crashes. By bridging powerful Rust-based crash analysis tools with AI capabilities, this project transforms cryptic crash dumps into clear, actionable insights - helping you quickly identify root causes and fix critical issues.
 
 ## 🚀 Features
 
