@@ -8,6 +8,15 @@
 
 AI 에이전트와 개발자가 애플리케이션 크래시를 이해할 수 있도록 돕는 MCP (Model Context Protocol) 서버입니다. 강력한 Rust 기반 크래시 분석 도구와 AI 기능을 연결하여, 알아보기 어려운 크래시 덤프를 명확하고 실행 가능한 인사이트로 변환합니다. 이를 통해 근본 원인을 빠르게 파악하고 중요한 문제를 해결할 수 있습니다.
 
+## 🚀 주요 기능
+
+- **Minidump 분석**: Windows 크래시 덤프 파일(`.dmp`)을 분석하여 상세한 스택 트레이스 제공
+- **심볼 추출**: 바이너리 파일(PDB, DWARF 형식)에서 Breakpad 심볼 추출
+- **다중 전송 방식**: stdio, HTTP, SSE 전송 방식 지원
+- **AI 기반 분석**: AI 지원 크래시 디버깅을 위한 내장 프롬프트
+- **크로스 플랫폼**: Windows, macOS, Linux에서 동작
+- **포괄적인 오류 처리**: 실행 가능한 제안과 함께 상세한 오류 메시지 제공
+
 ## 🚀 빠른 시작
 
 ### 방법 1: uvx 사용
@@ -224,32 +233,6 @@ Minidump 파일(`.dmp`)은 Windows 애플리케이션이 크래시할 때 생성
 - **DWARF**: Linux/macOS 디버그 정보
 - **Breakpad 형식**: 크로스 플랫폼 심볼 형식 (`.sym`)
 
-### 분석 워크플로우
-
-1. **크래시 전**: 애플리케이션 바이너리에서 심볼 추출
-   - `dump_syms`를 사용하여 PDB/DWARF 디버그 정보를 Breakpad 형식으로 변환
-   
-2. **크래시 후**: minidump 파일 분석
-   - 심볼과 함께 `minidump-stackwalk`를 사용하여 읽을 수 있는 스택 트레이스 생성
-
-AI 에이전트를 통한 MCP 도구 사용 예시:
-```python
-# 1. 애플리케이션 바이너리에서 심볼 추출 (앱 빌드 시 수행)
-result = await extract_symbols(
-    binary_path="/path/to/app.exe",  # 또는 .pdb 파일
-    output_dir="./symbols"
-)
-
-# 2. 크래시 발생 시 minidump 분석
-result = await stackwalk_minidump(
-    minidump_path="/path/to/crash.dmp",
-    symbols_path="./symbols"
-)
-```
-
-내부적으로 작동하는 도구들:
-- `dump_syms`: 바이너리에서 디버그 심볼 추출 (Windows의 EXE/DLL/PDB, Linux의 ELF)
-- `minidump-stackwalk`: 추출된 심볼을 사용하여 크래시 덤프 분석
 
 ### 심볼 디렉토리 구조
 
@@ -292,15 +275,6 @@ uv sync
 ```bash
 just install-tools
 ```
-
-## 🚀 주요 기능
-
-- **Minidump 분석**: Windows 크래시 덤프 파일(`.dmp`)을 분석하여 상세한 스택 트레이스 제공
-- **심볼 추출**: 바이너리 파일(PDB, DWARF 형식)에서 Breakpad 심볼 추출
-- **다중 전송 방식**: stdio, HTTP, SSE 전송 방식 지원
-- **AI 기반 분석**: AI 지원 크래시 디버깅을 위한 내장 프롬프트
-- **크로스 플랫폼**: Windows, macOS, Linux에서 동작
-- **포괄적인 오류 처리**: 실행 가능한 제안과 함께 상세한 오류 메시지 제공
 
 ## 🐛 문제 해결
 

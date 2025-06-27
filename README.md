@@ -8,6 +8,15 @@
 
 An MCP (Model Context Protocol) server that empowers AI agents and developers to understand application crashes. By bridging powerful Rust-based crash analysis tools with AI capabilities, this project transforms cryptic crash dumps into clear, actionable insights - helping you quickly identify root causes and fix critical issues.
 
+## 🚀 Features
+
+- **Minidump Analysis**: Analyze Windows crash dump files (`.dmp`) to get detailed stack traces
+- **Symbol Extraction**: Extract Breakpad symbols from binaries (PDB, DWARF formats)
+- **Multiple Transports**: Support for stdio, HTTP, and SSE transports
+- **AI-Powered Analysis**: Built-in prompts for AI-assisted crash debugging
+- **Cross-Platform**: Works on Windows, macOS, and Linux
+- **Comprehensive Error Handling**: Detailed error messages with actionable suggestions
+
 ## 🚀 Quick Start
 
 ### Method 1: Using uvx
@@ -224,32 +233,6 @@ Symbol files map memory addresses to human-readable function names and source lo
 - **DWARF**: Linux/macOS debug information
 - **Breakpad format**: Cross-platform symbol format (`.sym`)
 
-### Analysis Workflow
-
-1. **Before crash**: Extract symbols from your application binary
-   - Use `dump_syms` to convert PDB/DWARF debug info to Breakpad format
-   
-2. **After crash**: Analyze the minidump file
-   - Use `minidump-stackwalk` with the symbols to get readable stack traces
-
-Example using MCP tools through an AI agent:
-```python
-# 1. Extract symbols from application binary (do this when building your app)
-result = await extract_symbols(
-    binary_path="/path/to/app.exe",  # or .pdb file
-    output_dir="./symbols"
-)
-
-# 2. When a crash occurs, analyze the minidump
-result = await stackwalk_minidump(
-    minidump_path="/path/to/crash.dmp",
-    symbols_path="./symbols"
-)
-```
-
-The tools work behind the scenes:
-- `dump_syms`: Extracts debug symbols from binaries (EXE/DLL/PDB on Windows, ELF on Linux)
-- `minidump-stackwalk`: Analyzes crash dumps using the extracted symbols
 
 ### Symbol Directory Structure
 
@@ -292,15 +275,6 @@ If you need to update or reinstall them:
 ```bash
 just install-tools
 ```
-
-## 🚀 Features
-
-- **Minidump Analysis**: Analyze Windows crash dump files (`.dmp`) to get detailed stack traces
-- **Symbol Extraction**: Extract Breakpad symbols from binaries (PDB, DWARF formats)
-- **Multiple Transports**: Support for stdio, HTTP, and SSE transports
-- **AI-Powered Analysis**: Built-in prompts for AI-assisted crash debugging
-- **Cross-Platform**: Works on Windows, macOS, and Linux
-- **Comprehensive Error Handling**: Detailed error messages with actionable suggestions
 
 ## 🐛 Troubleshooting
 
