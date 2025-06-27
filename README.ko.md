@@ -12,10 +12,15 @@ AI 에이전트와 개발자가 애플리케이션 크래시를 이해할 수 �
 
 - **Minidump 분석**: Windows 크래시 덤프 파일(`.dmp`)을 분석하여 상세한 스택 트레이스 제공
 - **심볼 추출**: 바이너리 파일(PDB, DWARF 형식)에서 Breakpad 심볼 추출
-- **다중 전송 방식**: stdio, HTTP, SSE 전송 방식 지원
+- **다중 전송 방식**: stdio, Streamable HTTP, SSE 전송 방식 지원
 - **AI 기반 분석**: AI 지원 크래시 디버깅을 위한 내장 프롬프트
 - **크로스 플랫폼**: Windows, macOS, Linux에서 동작
 - **포괄적인 오류 처리**: 실행 가능한 제안과 함께 상세한 오류 메시지 제공
+
+## 📋 사전 요구사항
+
+- Python 3.11 이상
+- [uv](https://github.com/astral-sh/uv) 패키지 관리자
 
 ## 🚀 빠른 시작
 
@@ -44,7 +49,7 @@ uv sync
 
 2. 서버 실행:
 ```bash
-# 기본값: HTTP 전송, 포트 8000
+# 기본값: Streamable HTTP 전송, 포트 8000
 minidump-mcp server
 
 # 또는 전송 방식 명시
@@ -60,18 +65,21 @@ minidump-mcp client
 
 ### 서버 실행
 
-#### HTTP 전송 (기본값)
+#### Streamable HTTP 전송 (기본값)
 ```bash
 # 기본 설정
 minidump-mcp server
 
 # 사용자 지정 포트
 minidump-mcp server --port 8080
+
+# 명시적 전송 방식 지정
+minidump-mcp server --transport streamable-http
 ```
 
 #### STDIO 전송
 ```bash
-# AI 에이전트 통합용
+# AI 에이전트 통합용 (Claude Desktop, VS Code 등)
 minidump-mcp server --transport stdio
 ```
 
@@ -323,7 +331,7 @@ rust-minidump-mcp/
 ### 전송 방식 지원
 
 - **stdio**: CLI 통합을 위한 표준 입출력
-- **streamable-http**: 웹 서비스를 위한 HTTP 기반 전송
+- **streamable-http**: 웹 서비스를 위한 Streamable HTTP 전송
 - **sse**: 실시간 스트리밍을 위한 서버 전송 이벤트
 
 ## 🧪 개발
