@@ -6,7 +6,7 @@
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-purple)](https://modelcontextprotocol.io)
 [![uv](https://img.shields.io/badge/uv-package%20manager-yellow)](https://github.com/astral-sh/uv)
 
-Minidump 크래시 분석 기능을 제공하는 Python MCP (Model Context Protocol) 서버입니다. 이 프로젝트는 FastMCP를 사용하여 Rust 기반 도구로 Windows 크래시 덤프 파일을 분석하는 서버/클라이언트 인터페이스를 제공합니다.
+AI 에이전트와 개발자가 애플리케이션 크래시를 이해할 수 있도록 돕는 MCP (Model Context Protocol) 서버입니다. 강력한 Rust 기반 크래시 분석 도구와 AI 기능을 연결하여, 알아보기 어려운 크래시 덤프를 명확하고 실행 가능한 인사이트로 변환합니다. 이를 통해 근본 원인을 빠르게 파악하고 중요한 문제를 해결할 수 있습니다.
 
 ## 🚀 주요 기능
 
