@@ -8,55 +8,11 @@
 
 An MCP (Model Context Protocol) server that empowers AI agents and developers to understand application crashes. By bridging powerful Rust-based crash analysis tools with AI capabilities, this project transforms cryptic crash dumps into clear, actionable insights - helping you quickly identify root causes and fix critical issues.
 
-## 🚀 Features
-
-- **Minidump Analysis**: Analyze Windows crash dump files (`.dmp`) to get detailed stack traces
-- **Symbol Extraction**: Extract Breakpad symbols from binaries (PDB, DWARF formats)
-- **Multiple Transports**: Support for stdio, HTTP, and SSE transports
-- **AI-Powered Analysis**: Built-in prompts for AI-assisted crash debugging
-- **Cross-Platform**: Works on Windows, macOS, and Linux
-- **Comprehensive Error Handling**: Detailed error messages with actionable suggestions
-
-## 📋 Prerequisites
-
-- Python 3.11 or higher
-- [uv](https://github.com/astral-sh/uv) package manager
-- [just](https://github.com/casey/just) command runner (optional)
-
-## 🛠️ Installation
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/bahamoth/rust-minidump-mcp.git
-cd rust-minidump-mcp
-```
-
-### 2. Install dependencies
-
-```bash
-uv sync
-```
-
-This will automatically create a virtual environment and install all dependencies.
-
-### 3. Install Rust tools
-
-The project includes pre-compiled Rust binaries. Install them using:
-
-```bash
-just install-tools
-```
-
-This installs:
-- `minidump-stackwalk`: For analyzing minidump files
-- `dump_syms`: For extracting Breakpad symbols
-
 ## 🚀 Quick Start
 
-### Method 1: Using uvx (No Installation Required)
+### Method 1: Using uvx
 
-You can run the tool directly without installation using [uvx](https://github.com/astral-sh/uv):
+Run directly without installation:
 
 ```bash
 # From the project directory
@@ -70,22 +26,49 @@ uvx minidump-mcp client
 
 ### Method 2: Traditional Installation
 
-After installation with `uv sync`, you can use the standard command:
+1. Clone and install:
+```bash
+git clone https://github.com/bahamoth/rust-minidump-mcp.git
+cd rust-minidump-mcp
+uv sync
+```
+
+2. Run the server:
+```bash
+# Default: HTTP transport on port 8000
+minidump-mcp server
+
+# Or specify transport explicitly
+minidump-mcp server --transport streamable-http --port 8000
+```
+
+3. Run the client(for development):
+```bash
+minidump-mcp client
+```
+
+## 📚 Usage
 
 ### Running the Server
 
-#### STDIO Transport (default)
+#### HTTP Transport (Default)
 ```bash
+# Default configuration
 minidump-mcp server
+
+# With custom port
+minidump-mcp server --port 8080
 ```
 
-#### HTTP Transport
+#### STDIO Transport
 ```bash
-minidump-mcp server --transport streamable-http --port 8000
+# For AI agent integration
+minidump-mcp server --transport stdio
 ```
 
 #### SSE Transport
 ```bash
+# For real-time streaming
 minidump-mcp server --transport sse --port 9000
 ```
 
@@ -139,6 +122,63 @@ result = await extract_symbols(
 # Creates: ./symbols/app.exe/1234ABCD/app.exe.sym
 ```
 
+## 🤖 AI Agent Integration
+
+### Claude Desktop
+
+Add to your Claude Desktop configuration file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`  
+**Linux**: `~/.config/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "minidump-mcp": {
+      "command": "uvx",
+      "args": ["--from", ".", "minidump-mcp", "server", "--transport", "stdio"],
+      "cwd": "/path/to/rust-minidump-mcp"
+    }
+  }
+}
+```
+
+After PyPI deployment, you can simplify to:
+```json
+{
+  "mcpServers": {
+    "minidump-mcp": {
+      "command": "uvx",
+      "args": ["minidump-mcp", "server", "--transport", "stdio"]
+    }
+  }
+}
+```
+
+### Claude Code
+
+Claude Code automatically detects MCP servers. After installation:
+
+1. Open Claude Code in your project directory
+2. The minidump-mcp server will be available for crash analysis tasks
+
+### VS Code with Continue.dev
+
+Add to your Continue configuration (`~/.continue/config.json`):
+
+```json
+{
+  "models": [...],
+  "mcpServers": {
+    "minidump-mcp": {
+      "command": "uvx",
+      "args": ["--from", "/path/to/rust-minidump-mcp", "minidump-mcp", "server", "--transport", "stdio"]
+    }
+  }
+}
+```
+
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -165,6 +205,111 @@ MINIDUMP_MCP_CLIENT_TIMEOUT=30.0
 2. Environment variables
 3. `.env` file
 4. Default values (lowest priority)
+
+## 📊 Understanding Crash Analysis
+
+### Minidump Files
+
+Minidump files (`.dmp`) are compact crash reports generated when a Windows application crashes. They contain:
+- Thread information and stack traces
+- CPU register states
+- Loaded module list
+- Exception information
+- System information
+
+### Symbol Files
+
+Symbol files map memory addresses to human-readable function names and source locations:
+- **PDB files**: Windows debug symbols
+- **DWARF**: Linux/macOS debug information
+- **Breakpad format**: Cross-platform symbol format (`.sym`)
+
+### Analysis Workflow
+
+1. **Crash occurs**: Application generates a minidump
+2. **Extract symbols**: Use `extract_symbols` on the crashed binary
+3. **Analyze dump**: Use `stackwalk_minidump` with symbols
+4. **Interpret results**: Get function names, file paths, and line numbers
+
+Example workflow:
+```bash
+# 1. Extract symbols from your application
+minidump-mcp extract-symbols /path/to/app.exe --output ./symbols
+
+# 2. Analyze the crash dump
+minidump-mcp analyze /path/to/crash.dmp --symbols ./symbols
+```
+
+### Symbol Directory Structure
+
+Breakpad symbols follow a specific directory structure:
+```
+symbols/
+└── app.exe/
+    └── 1234ABCD5678EF90/  # Module ID
+        └── app.exe.sym    # Symbol file
+```
+
+## 🛠️ Installation Details
+
+### Prerequisites
+
+- Python 3.11 or higher
+- [uv](https://github.com/astral-sh/uv) package manager
+- [just](https://github.com/casey/just) command runner (optional)
+
+### Install from Source
+
+1. Clone the repository:
+```bash
+git clone https://github.com/bahamoth/rust-minidump-mcp.git
+cd rust-minidump-mcp
+```
+
+2. Install dependencies:
+```bash
+uv sync
+```
+
+This will automatically create a virtual environment and install all dependencies.
+
+3. Install Rust tools (Optional):
+
+The project includes pre-compiled Rust binaries in `minidumpmcp/tools/bin/`. They are automatically used when running the tools. 
+
+If you need to update or reinstall them:
+```bash
+just install-tools
+```
+
+## 🚀 Features
+
+- **Minidump Analysis**: Analyze Windows crash dump files (`.dmp`) to get detailed stack traces
+- **Symbol Extraction**: Extract Breakpad symbols from binaries (PDB, DWARF formats)
+- **Multiple Transports**: Support for stdio, HTTP, and SSE transports
+- **AI-Powered Analysis**: Built-in prompts for AI-assisted crash debugging
+- **Cross-Platform**: Works on Windows, macOS, and Linux
+- **Comprehensive Error Handling**: Detailed error messages with actionable suggestions
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Binary not found error**
+   ```
+   Solution: Run 'just install-tools' to install required binaries
+   ```
+
+2. **Connection refused error**
+   ```
+   Solution: Ensure the server is running on the correct port
+   Check: minidump-mcp server --transport streamable-http --port 8000
+   ```
+
+3. **Invalid minidump format**
+   ```
+   Solution: Ensure the file is a valid Windows minidump (.dmp) file
+   ```
 
 ## 🏗️ Architecture
 
@@ -237,30 +382,6 @@ Common commands:
 - `just lint`: Run linters
 - `just format`: Format code
 
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Binary not found error**
-   ```
-   Solution: Run 'just install-tools' to install required binaries
-   ```
-
-2. **Connection refused error**
-   ```
-   Solution: Ensure the server is running on the correct port
-   Check: minidump-mcp server --transport streamable-http --port 8000
-   ```
-
-3. **Invalid minidump format**
-   ```
-   Solution: Ensure the file is a valid Windows minidump (.dmp) file
-   ```
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -271,51 +392,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📊 Understanding Crash Analysis
+## 📝 License
 
-### Minidump Files
-
-Minidump files (`.dmp`) are compact crash reports generated when a Windows application crashes. They contain:
-- Thread information and stack traces
-- CPU register states
-- Loaded module list
-- Exception information
-- System information
-
-### Symbol Files
-
-Symbol files map memory addresses to human-readable function names and source locations:
-- **PDB files**: Windows debug symbols
-- **DWARF**: Linux/macOS debug information
-- **Breakpad format**: Cross-platform symbol format (`.sym`)
-
-### Analysis Workflow
-
-1. **Crash occurs**: Application generates a minidump
-2. **Extract symbols**: Use `extract_symbols` on the crashed binary
-3. **Analyze dump**: Use `stackwalk_minidump` with symbols
-4. **Interpret results**: Get function names, file paths, and line numbers
-
-Example workflow:
-```bash
-# 1. Extract symbols from your application
-minidump-mcp extract-symbols /path/to/app.exe --output ./symbols
-
-# 2. Analyze the crash dump
-minidump-mcp analyze /path/to/crash.dmp --symbols ./symbols
-```
-
-## 📁 Symbol Directory Structure
-
-Breakpad symbols follow a specific directory structure:
-```
-symbols/
-└── app.exe/
-    └── 1234ABCD5678EF90/  # Module ID
-        └── app.exe.sym    # Symbol file
-```
-
-This structure allows the analyzer to automatically find the correct symbols for each module in the crash dump.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🔗 Related Projects
 
