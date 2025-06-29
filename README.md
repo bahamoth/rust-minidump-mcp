@@ -12,53 +12,49 @@ An MCP (Model Context Protocol) server that empowers AI agents and developers to
 
 - **Minidump Analysis**: Analyze Windows crash dump files (`.dmp`) to get detailed stack traces
 - **Symbol Extraction**: Extract Breakpad symbols from binaries (PDB, DWARF formats)
-- **Multiple Transports**: Support for stdio, Streamable HTTP, and SSE transports
+- **Multiple Transport Support**: Support for stdio, Streamable HTTP, and SSE transports
 - **AI-Powered Analysis**: Built-in prompts for AI-assisted crash debugging
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Comprehensive Error Handling**: Detailed error messages with actionable suggestions
 
 ## 📋 Prerequisites
 
-- Python 3.11 or higher
+- Python 3.13 or higher
 - [uv](https://github.com/astral-sh/uv) package manager
 
 ## 🚀 Quick Start
 
-### Method 1: Using uvx
+### Method 1: Using uvx (Recommended)
 
 Run directly without installation:
 
 ```bash
-# From the project directory
-uvx --from . minidump-mcp server
-uvx --from . minidump-mcp client
+# Run the server
+uvx rust-minidump-mcp server
 
-# After PyPI deployment (future)
-uvx minidump-mcp server
-uvx minidump-mcp client
+# Run the client
+uvx rust-minidump-mcp client
 ```
 
 ### Method 2: Traditional Installation
 
-1. Clone and install:
+1. Install:
 ```bash
-git clone https://github.com/bahamoth/rust-minidump-mcp.git
-cd rust-minidump-mcp
-uv sync
+uv pip install rust-minidump-mcp
 ```
 
 2. Run the server:
 ```bash
 # Default: Streamable HTTP transport on port 8000
-minidump-mcp server
+rust-minidump-mcp server
 
 # Or specify transport explicitly
-minidump-mcp server --transport streamable-http --port 8000
+rust-minidump-mcp server --transport streamable-http --port 8000
 ```
 
 3. Run the client:
 ```bash
-minidump-mcp client
+rust-minidump-mcp client
 ```
 
 ## 📚 Usage
@@ -68,39 +64,39 @@ minidump-mcp client
 #### Streamable HTTP Transport (Default)
 ```bash
 # Default configuration
-minidump-mcp server
+rust-minidump-mcp server
 
 # With custom port
-minidump-mcp server --port 8080
+rust-minidump-mcp server --port 8080
 
 # Explicit transport specification
-minidump-mcp server --transport streamable-http
+rust-minidump-mcp server --transport streamable-http
 ```
 
 #### STDIO Transport
 ```bash
 # For AI agent integration (Claude Desktop, VS Code, etc.)
-minidump-mcp server --transport stdio
+rust-minidump-mcp server --transport stdio
 ```
 
 #### SSE Transport
 ```bash
 # For real-time streaming
-minidump-mcp server --transport sse --port 9000
+rust-minidump-mcp server --transport sse --port 9000
 ```
 
 ### Running the Client
 
 ```bash
 # Connect using default settings
-minidump-mcp client
+rust-minidump-mcp client
 
 # Connect to custom server
-minidump-mcp client --url http://localhost:8080/mcp
+rust-minidump-mcp client --url http://localhost:8080/mcp
 
 # Use environment variables
 export MINIDUMP_MCP_CLIENT_URL=http://localhost:8080/mcp
-minidump-mcp client
+rust-minidump-mcp client
 ```
 
 ## 📚 MCP Tools
@@ -154,20 +150,7 @@ Add to your Claude Desktop configuration file:
   "mcpServers": {
     "minidump-mcp": {
       "command": "uvx",
-      "args": ["--from", ".", "minidump-mcp", "server", "--transport", "stdio"],
-      "cwd": "/path/to/rust-minidump-mcp"
-    }
-  }
-}
-```
-
-After PyPI deployment, you can simplify to:
-```json
-{
-  "mcpServers": {
-    "minidump-mcp": {
-      "command": "uvx",
-      "args": ["minidump-mcp", "server", "--transport", "stdio"]
+      "args": ["rust-minidump-mcp", "server", "--transport", "stdio"]
     }
   }
 }
@@ -190,7 +173,7 @@ Add to your Continue configuration (`~/.continue/config.json`):
   "mcpServers": {
     "minidump-mcp": {
       "command": "uvx",
-      "args": ["--from", "/path/to/rust-minidump-mcp", "minidump-mcp", "server", "--transport", "stdio"]
+      "args": ["rust-minidump-mcp", "server", "--transport", "stdio"]
     }
   }
 }
@@ -296,7 +279,7 @@ just install-tools
 2. **Connection refused error**
    ```
    Solution: Ensure the server is running on the correct port
-   Check: minidump-mcp server --transport streamable-http --port 8000
+   Check: rust-minidump-mcp server --transport streamable-http --port 8000
    ```
 
 3. **Invalid minidump format**
