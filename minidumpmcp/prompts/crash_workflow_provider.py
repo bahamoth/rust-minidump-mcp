@@ -18,20 +18,16 @@ class CrashWorkflowProvider:
         self,
         dump_path: str = Field(description="Path to the minidump (.dmp) file"),
         symbol_sources: Optional[List[str]] = Field(
-            default=None,
-            description="Paths to PDB/DWARF files or directories, or Breakpad symbol directories"
+            default=None, description="Paths to PDB/DWARF files or directories, or Breakpad symbol directories"
         ),
         symbol_server_urls: Optional[List[str]] = Field(
-            default=None,
-            description="URLs of symbol servers (e.g., Microsoft, internal servers)"
+            default=None, description="URLs of symbol servers (e.g., Microsoft, internal servers)"
         ),
         executable_path: Optional[str] = Field(
-            default=None,
-            description="Path to the crashed executable for enhanced unwind information"
+            default=None, description="Path to the crashed executable for enhanced unwind information"
         ),
         analysis_options: Optional[Dict[str, Any]] = Field(
-            default=None,
-            description="Configuration for analysis depth and focus areas"
+            default=None, description="Configuration for analysis depth and focus areas"
         ),
     ) -> str:
         """

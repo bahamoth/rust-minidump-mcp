@@ -12,7 +12,7 @@ An MCP (Model Context Protocol) server that empowers AI agents and developers to
 
 - **Minidump Analysis**: Analyze Windows crash dump files (`.dmp`) to get detailed stack traces
 - **Symbol Extraction**: Extract Breakpad symbols from binaries (PDB, DWARF formats)
-- **Multiple Transport Support**: Support for stdio, Streamable HTTP, and SSE transports
+- **Multiple Transport Support**: stdio (default), Streamable HTTP, and SSE transports
 - **AI-Powered Analysis**: Built-in prompts for AI-assisted crash debugging
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Comprehensive Error Handling**: Detailed error messages with actionable suggestions
@@ -29,8 +29,11 @@ An MCP (Model Context Protocol) server that empowers AI agents and developers to
 Run directly without installation:
 
 ```bash
-# Run the server
+# Run the server (default: stdio transport)
 uvx rust-minidump-mcp server
+
+# Run with HTTP transport for web access
+uvx rust-minidump-mcp server --transport streamable-http
 
 # Run the client
 uvx rust-minidump-mcp client
@@ -45,10 +48,10 @@ uv pip install rust-minidump-mcp
 
 2. Run the server:
 ```bash
-# Default: Streamable HTTP transport on port 8000
+# Default: stdio transport (for AI agent integration)
 rust-minidump-mcp server
 
-# Or specify transport explicitly
+# Or use HTTP transport for web access
 rust-minidump-mcp server --transport streamable-http --port 8000
 ```
 
@@ -61,22 +64,22 @@ rust-minidump-mcp client
 
 ### Running the Server
 
-#### Streamable HTTP Transport (Default)
+#### STDIO Transport (Default)
 ```bash
-# Default configuration
+# Default configuration - for AI agent integration (Claude Desktop, VS Code, etc.)
 rust-minidump-mcp server
 
-# With custom port
-rust-minidump-mcp server --port 8080
-
-# Explicit transport specification
-rust-minidump-mcp server --transport streamable-http
+# Explicit specification
+rust-minidump-mcp server --transport stdio
 ```
 
-#### STDIO Transport
+#### Streamable HTTP Transport
 ```bash
-# For AI agent integration (Claude Desktop, VS Code, etc.)
-rust-minidump-mcp server --transport stdio
+# For web access and debugging
+rust-minidump-mcp server --transport streamable-http
+
+# With custom port
+rust-minidump-mcp server --transport streamable-http --port 8080
 ```
 
 #### SSE Transport

@@ -1,9 +1,9 @@
 """Server configuration settings using Pydantic Settings."""
 
-from typing import Any, Literal, Union
+from typing import Any, Literal, Tuple, Type, Union
 
 from pydantic import BaseModel, Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 
 class BaseTransportConfig(BaseModel):
@@ -75,9 +75,7 @@ class ServerSettings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(default="INFO", description="Logging level")
 
     # Transport selection
-    transport: Literal["stdio", "streamable-http", "sse"] = Field(
-        default="streamable-http", description="Transport type to use"
-    )
+    transport: Literal["stdio", "streamable-http", "sse"] = Field(default="stdio", description="Transport type to use")
 
     # Transport-specific configurations
     stdio: StdioTransportConfig = Field(default_factory=StdioTransportConfig)
@@ -131,3 +129,23 @@ class ServerSettings(BaseSettings):
                         raise ValueError(f"Invalid port: {config.port}. Must be between 1 and 65535")
                     if not config.host:
                         raise ValueError("Host cannot be empty for HTTP-based transports")
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        """Customize settings sources priority.
+
+        Priority order (highest to lowest):
+        1. init_settings: Arguments passed to the constructor
+        2. env_settings: Environment variables
+        3. dotenv_settings: .env file
+
+        This allows CLI arguments to override environment variables and .env files.
+        """
+        return (init_settings, env_settings, dotenv_settings)
