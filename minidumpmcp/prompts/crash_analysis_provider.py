@@ -14,7 +14,7 @@ class CrashAnalysisProvider:
         """Initialize the crash analysis provider."""
         self._prompts_dir = Path(__file__).parent
 
-    async def crash_analyzer(
+    async def analyze_stackwalk_result(
         self,
         analysis_data: Dict[str, Any] = Field(description="Complete JSON output from stackwalk_minidump tool"),
         analysis_depth: Literal["basic", "detailed", "comprehensive"] = Field(
@@ -30,8 +30,8 @@ class CrashAnalysisProvider:
         This prompt acts as an expert crash analysis specialist with deep knowledge
         of Windows minidump analysis, stack traces, and debugging techniques.
         """
-        # Load the crash analyzer template
-        template_path = self._prompts_dir / "crash_analyzer.md"
+        # Load the analyze stackwalk result template
+        template_path = self._prompts_dir / "analyze_stackwalk_result.md"
         with open(template_path, "r", encoding="utf-8") as f:
             template = f.read()
 
@@ -47,7 +47,7 @@ class CrashAnalysisProvider:
 
         return prompt
 
-    async def stack_interpreter(
+    async def interpret_stack_frames(
         self,
         analysis_data: Dict[str, Any] = Field(description="Complete JSON output from stackwalk_minidump tool"),
         frame_limit: int = Field(default=20, description="Maximum number of frames to analyze (max: 50)"),
@@ -59,8 +59,8 @@ class CrashAnalysisProvider:
         This prompt specializes in understanding how programs execute and where they fail,
         with expertise in call stack analysis and frame interpretation.
         """
-        # Load the stack interpreter template
-        template_path = self._prompts_dir / "stack_interpreter.md"
+        # Load the interpret stack frames template
+        template_path = self._prompts_dir / "interpret_stack_frames.md"
         with open(template_path, "r", encoding="utf-8") as f:
             template = f.read()
 
@@ -78,7 +78,7 @@ class CrashAnalysisProvider:
 
         return prompt
 
-    async def exception_decoder(
+    async def decode_exception_info(
         self,
         analysis_data: Dict[str, Any] = Field(description="Complete JSON output from stackwalk_minidump tool"),
         focus_type: Literal["address_pattern", "exception_type", "all"] = Field(
@@ -91,8 +91,8 @@ class CrashAnalysisProvider:
         This prompt specializes in Windows exception analysis with deep expertise in
         interpreting crash exception types, memory addresses, and system-level crash patterns.
         """
-        # Load the exception decoder template
-        template_path = self._prompts_dir / "exception_decoder.md"
+        # Load the decode exception info template
+        template_path = self._prompts_dir / "decode_exception_info.md"
         with open(template_path, "r", encoding="utf-8") as f:
             template = f.read()
 
@@ -113,7 +113,7 @@ class CrashAnalysisProvider:
 
         return prompt
 
-    async def symbol_advisor(
+    async def evaluate_symbol_quality(
         self,
         analysis_data: Dict[str, Any] = Field(description="Complete JSON output from stackwalk_minidump tool"),
         focus_area: Literal["application_modules", "system_modules", "all"] = Field(
@@ -126,8 +126,8 @@ class CrashAnalysisProvider:
         This prompt specializes in debugging symbol analysis with expertise in understanding
         how symbol information affects crash analysis and how to optimize symbol availability.
         """
-        # Load the symbol advisor template
-        template_path = self._prompts_dir / "symbol_advisor.md"
+        # Load the evaluate symbol quality template
+        template_path = self._prompts_dir / "evaluate_symbol_quality.md"
         with open(template_path, "r", encoding="utf-8") as f:
             template = f.read()
 
