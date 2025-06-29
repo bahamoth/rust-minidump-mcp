@@ -9,6 +9,8 @@ from fastmcp import FastMCP
 from minidumpmcp.config import ServerSettings
 from minidumpmcp.config.settings import SseTransportConfig, StreamableHttpConfig
 from minidumpmcp.prompts import CrashAnalysisProvider
+from minidumpmcp.prompts.crash_workflow_provider import CrashWorkflowProvider
+from minidumpmcp.prompts.symbol_preparation_provider import SymbolPreparationProvider
 from minidumpmcp.tools.dump_syms import DumpSymsTool
 from minidumpmcp.tools.stackwalk import StackwalkProvider
 
@@ -45,10 +47,18 @@ async def run_mcp_server(settings: ServerSettings | None = None) -> None:
 
     # Register crash analysis prompts
     crash_provider = CrashAnalysisProvider()
-    mcp.prompt(crash_provider.crash_analyzer)
-    mcp.prompt(crash_provider.stack_interpreter)
-    mcp.prompt(crash_provider.exception_decoder)
-    mcp.prompt(crash_provider.symbol_advisor)
+    mcp.prompt(crash_provider.analyze_stackwalk_result)
+    mcp.prompt(crash_provider.interpret_stack_frames)
+    mcp.prompt(crash_provider.decode_exception_info)
+    mcp.prompt(crash_provider.evaluate_symbol_quality)
+
+    # Register symbol preparation prompts
+    symbol_provider = SymbolPreparationProvider()
+    mcp.prompt(symbol_provider.prepare_symbols_for_analysis)
+
+    # Register end-to-end workflow prompts
+    workflow_provider = CrashWorkflowProvider()
+    mcp.prompt(workflow_provider.analyze_crash_end_to_end)
 
     # Build run_async arguments based on transport configuration
     try:
