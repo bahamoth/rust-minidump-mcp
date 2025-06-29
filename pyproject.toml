@@ -2,9 +2,21 @@
 name = "rust-minidump-mcp"
 version = "0.1.0"
 description = "Rust Minidump MCP server"
-authors = [{name = "Example"}]
+authors = [{name = "bahamoth", email = "bahamoth@naver.com"}]
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.13"
+keywords = ["mcp", "minidump", "rust-minidump", "crash-analysis"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: Software Development :: Testing",
+]
 dependencies = [
     "uvicorn",
     "pydantic>=2",
@@ -12,6 +24,11 @@ dependencies = [
     "typer>=0.16.0",
     "pydantic-settings>=2.9.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/bahamoth/rust-minidump-mcp"
+Repository = "https://github.com/bahamoth/rust-minidump-mcp"
+Issues = "https://github.com/bahamoth/rust-minidump-mcp/issues"
 
 [project.scripts]
 minidump-mcp = "minidumpmcp.cli:app"  # Traditional installation method. Also available via uvx minidump-mcp
@@ -86,3 +103,8 @@ dev = [
     "rust-just>=1.40.0",
     "pytest-asyncio>=1.0.0",
 ]
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
