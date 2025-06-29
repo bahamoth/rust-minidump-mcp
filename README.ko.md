@@ -12,7 +12,7 @@ AI 에이전트와 개발자가 애플리케이션 크래시를 이해할 수 �
 
 - **Minidump 분석**: Windows 크래시 덤프 파일(`.dmp`)을 분석하여 상세한 스택 트레이스 제공
 - **심볼 추출**: 바이너리 파일(PDB, DWARF 형식)에서 Breakpad 심볼 추출
-- **다중 전송 방식**: stdio, Streamable HTTP, SSE 전송 방식 지원
+- **다양한 Transport 방식 지원**: stdio, Streamable HTTP, SSE Transport 방식 지원
 - **AI 기반 분석**: AI 지원 크래시 디버깅을 위한 내장 프롬프트
 - **크로스 플랫폼**: Windows, macOS, Linux에서 동작
 - **포괄적인 오류 처리**: 실행 가능한 제안과 함께 상세한 오류 메시지 제공
@@ -38,13 +38,11 @@ uvx minidump-mcp server
 uvx minidump-mcp client
 ```
 
-### 방법 2: 전통적인 설치
+### 방법 2: uv로 설치
 
-1. 복제 및 설치:
+1. 설치:
 ```bash
-git clone https://github.com/bahamoth/rust-minidump-mcp.git
-cd rust-minidump-mcp
-uv sync
+uv pip install minidump-mcp 
 ```
 
 2. 서버 실행:

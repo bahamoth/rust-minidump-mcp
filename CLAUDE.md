@@ -47,28 +47,36 @@ pytest tests/test_stackwalk.py  # Run specific test file
 
 ### Running the Server
 ```bash
-# Using uvx (no installation required) - from project directory
-uvx --from . minidump-mcp server                    # Default: Streamable HTTP on port 8000
-uvx --from . minidump-mcp server --transport stdio  # For AI agent integration
-uvx --from . minidump-mcp server --transport sse --port 9000
+# Development - from project directory
+python -m minidumpmcp server                    # Default: Streamable HTTP on port 8000
+python -m minidumpmcp server --transport stdio  # For AI agent integration
+python -m minidumpmcp server --transport sse --port 9000
+
+# Using uvx (from project directory during development)
+uvx --from . rust-minidump-mcp server                    # Default: Streamable HTTP on port 8000
+uvx --from . rust-minidump-mcp server --transport stdio  # For AI agent integration
+uvx --from . rust-minidump-mcp server --transport sse --port 9000
 
 # Traditional method (after uv sync)
-minidump-mcp server                                  # Default: Streamable HTTP on port 8000
-minidump-mcp server --transport streamable-http --port 8080  # Custom port
-minidump-mcp server --transport stdio                # For AI agent integration
-minidump-mcp server --transport sse --port 9000      # Server-Sent Events
+rust-minidump-mcp server                                  # Default: Streamable HTTP on port 8000
+rust-minidump-mcp server --transport streamable-http --port 8080  # Custom port
+rust-minidump-mcp server --transport stdio                # For AI agent integration
+rust-minidump-mcp server --transport sse --port 9000      # Server-Sent Events
 ```
 
 ### Running the Client
 ```bash
-# Using uvx (no installation required) - from project directory
-uvx --from . minidump-mcp client
+# Development - from project directory
+python -m minidumpmcp client
+
+# Using uvx (from project directory during development)
+uvx --from . rust-minidump-mcp client
 
 # Traditional method (after uv sync)
-minidump-mcp client  # Test client that connects to server and demos tools
+rust-minidump-mcp client  # Test client that connects to server and demos tools
 ```
 
-Note: After PyPI deployment, the uvx commands will simplify to `uvx minidump-mcp server` and `uvx minidump-mcp client`.
+Note: After PyPI deployment, the uvx commands will simplify to `uvx rust-minidump-mcp server` and `uvx rust-minidump-mcp client`.
 
 ## Architecture
 

@@ -31,7 +31,7 @@ Repository = "https://github.com/bahamoth/rust-minidump-mcp"
 Issues = "https://github.com/bahamoth/rust-minidump-mcp/issues"
 
 [project.scripts]
-minidump-mcp = "minidumpmcp.cli:app"  # Traditional installation method. Also available via uvx minidump-mcp
+rust-minidump-mcp = "minidumpmcp.cli:app"
 
 [build-system]
 requires = ["hatchling>=1.27.0"]
@@ -104,7 +104,9 @@ dev = [
     "pytest-asyncio>=1.0.0",
 ]
 
-[[tool.uv.index]]
-name = "testpypi"
-url = "https://test.pypi.org/simple/"
-publish-url = "https://test.pypi.org/legacy/"
+# TestPyPI publishing configuration
+# Uncomment when publishing to TestPyPI
+# [[tool.uv.index]]
+# name = "testpypi"
+# url = "https://test.pypi.org/simple/"
+# publish-url = "https://test.pypi.org/legacy/"
