@@ -57,7 +57,7 @@ class ToolNotFoundError(MinidumpMCPError):
         if searched_paths:
             context["searched_paths"] = [str(p) for p in searched_paths]
 
-        suggestion = f"Run 'just install-tools' to install {tool_name}, " f"or ensure it's available on your PATH"
+        suggestion = f"Run 'just install-tools' to install {tool_name}, or ensure it's available on your PATH"
 
         super().__init__(message, context=context, suggestion=suggestion, error_code="TOOL_NOT_FOUND")
 
