@@ -68,6 +68,39 @@
   - [ ] feat!: major version bump
 - [ ] Verify automated PR creation and merging
 
+## ✅ Phase 1.7: Prompt Consolidation and Enhancement (COMPLETED)
+Based on real-world usage feedback, consolidate prompts to 3 focused ones that provide clear value beyond tool outputs.
+
+### Tasks
+- [x] **Consolidate to 3 essential prompts**
+  - [x] Create `analyze_crash_with_expertise` - Expert role-based crash analysis
+    - [x] Add crash analysis expert role definition
+    - [x] Include language detection from modules/symbols
+    - [x] Provide concrete improvement suggestions
+    - [x] Add crash prevention strategies
+  - [x] Create `analyze_technical_details` - Deep technical analysis
+    - [x] Register state interpretation
+    - [x] Stack frame pattern analysis (merge from interpret_stack_frames)
+    - [x] Memory corruption detection
+    - [x] Symbol-less frame estimation methods
+  - [x] Update `symbol_transformation_guide` (rename from prepare_symbols_for_analysis)
+    - [x] Explain why Breakpad format is needed
+    - [x] Document dump_syms tool usage
+    - [x] Show expected output structure (MODULE/GUID/MODULE.sym)
+    - [x] Include common troubleshooting
+
+- [x] **Remove redundant prompts**
+  - [x] Delete `analyze_stackwalk_result.md` - Duplicates tool output
+  - [x] Delete `interpret_stack_frames.md` - Merge into technical_details
+  - [x] Delete `decode_exception_info.md` - Merge into expertise analysis
+  - [x] Delete `evaluate_symbol_quality.md` - Self-evident information
+  - [x] Delete `analyze_crash_end_to_end.md` - Too abstract
+
+- [x] **Update provider implementations**
+  - [x] Update `crash_analysis_provider.py` to remove deleted methods
+  - [x] Add new prompt methods for the 3 consolidated prompts
+  - [x] Update `server.py` to reflect new prompt structure
+
 ## 📋 Phase 3: GitHub Actions for Publishing
 - [ ] Create `.github/workflows/publish.yml` workflow
   - [ ] Trigger on release published (created by release-please)
