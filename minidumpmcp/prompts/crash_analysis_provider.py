@@ -1,10 +1,11 @@
 """Crash analysis prompts for FastMCP."""
 
 import json
+import logging
 from pathlib import Path
-from typing import Any, Dict, Literal
+from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import Field
+logger = logging.getLogger(__name__)
 
 
 class CrashAnalysisProvider:
@@ -14,130 +15,265 @@ class CrashAnalysisProvider:
         """Initialize the crash analysis provider."""
         self._prompts_dir = Path(__file__).parent
 
-    async def analyze_stackwalk_result(
+    async def analyze_crash_with_expertise(
         self,
-        analysis_data: Dict[str, Any] = Field(description="Complete JSON output from stackwalk_minidump tool"),
-        analysis_depth: Literal["basic", "detailed", "comprehensive"] = Field(
-            default="detailed", description="Analysis depth level"
-        ),
-        focus_area: Literal["memory", "threading", "logic", "all"] = Field(
-            default="all", description="Specific focus area for analysis"
-        ),
+        stackwalk_output: Optional[Union[str, Dict[str, Any]]] = None,
+        focus_areas: Optional[List[Literal["root_cause", "prevention", "improvements"]]] = None,
     ) -> str:
         """
-        Analyze crash dump data and provide comprehensive insights about software crashes.
+        Analyze crash dump as an expert with 20 years of experience.
 
-        This prompt acts as an expert crash analysis specialist with deep knowledge
-        of Windows minidump analysis, stack traces, and debugging techniques.
+        Provides root cause analysis and concrete improvement suggestions.
+        This prompt gives the LLM a crash analysis expert role to identify programming languages,
+        detect crash patterns, and recommend prevention strategies.
+
+        Args:
+            stackwalk_output: Complete JSON output from stackwalk_minidump tool (as JSON string or dict)
+            focus_areas: Optional list of specific areas to focus the analysis on
+                        (root_cause, prevention, improvements)
         """
-        # Load the analyze stackwalk result template
-        template_path = self._prompts_dir / "analyze_stackwalk_result.md"
-        with open(template_path, "r", encoding="utf-8") as f:
-            template = f.read()
+        # Handle case where prompt is called without parameters (for metadata/listing)
+        if stackwalk_output is None:
+            return self._create_usage_guide("analyze_crash_with_expertise")
 
-        # Build the complete prompt with analysis data
-        prompt = f"{template}\n\n## Analysis Task\n\n"
-        prompt += f"**Analysis Data:**\n```json\n{json.dumps(analysis_data, indent=2)}\n```\n\n"
-        prompt += f"**Analysis Depth:** {analysis_depth}\n"
-        prompt += f"**Focus Area:** {focus_area}\n\n"
-        prompt += (
-            "Please analyze this crash dump data and provide your structured JSON response "
-            "according to the format specified above."
-        )
+        try:
+            # Parse JSON if string is provided
+            if isinstance(stackwalk_output, str):
+                try:
+                    stackwalk_data = json.loads(stackwalk_output)
+                except json.JSONDecodeError as e:
+                    error_msg = f"Invalid JSON in stackwalk_output: {str(e)}"
+                    logger.error(error_msg)
+                    return self._create_error_response(
+                        "analyze_crash_with_expertise",
+                        error_msg,
+                        "The stackwalk_output must be valid JSON string or dictionary.",
+                    )
+            else:
+                # If it's already a dict, use it as is
+                stackwalk_data = stackwalk_output
 
-        return prompt
+            # Runtime validation for robustness
+            if not isinstance(stackwalk_data, dict):
+                error_msg = (
+                    f"Invalid stackwalk_output type after parsing: expected dict, got {type(stackwalk_data).__name__}"
+                )
+                logger.error(error_msg)
+                return self._create_error_response(
+                    "analyze_crash_with_expertise",
+                    error_msg,
+                    "The stackwalk_output must be a dictionary containing the crash analysis data.",
+                )
 
-    async def interpret_stack_frames(
+            # Load the analyze crash with expertise template
+            template_path = self._prompts_dir / "analyze_crash_with_expertise.md"
+            if not template_path.exists():
+                error_msg = f"Template file not found: {template_path}"
+                logger.error(error_msg)
+                return self._create_error_response(
+                    "analyze_crash_with_expertise",
+                    error_msg,
+                    "The prompt template file is missing. Please ensure the installation is complete.",
+                )
+
+            with open(template_path, "r", encoding="utf-8") as f:
+                template = f.read()
+
+            # Build the complete prompt with analysis data
+            prompt = f"{template}\n\n## Stackwalk Output\n\n"
+            prompt += f"```json\n{json.dumps(stackwalk_data, indent=2)}\n```\n\n"
+
+            if focus_areas and isinstance(focus_areas, list):
+                prompt += f"**Focus Areas:** {', '.join(focus_areas)}\n\n"
+
+            prompt += (
+                "Please analyze this crash dump and provide your expert analysis "
+                "following the response format specified above."
+            )
+
+            return prompt
+
+        except Exception as e:
+            error_msg = f"Unexpected error in analyze_crash_with_expertise: {str(e)}"
+            logger.exception(error_msg)
+            return self._create_error_response(
+                "analyze_crash_with_expertise",
+                error_msg,
+                "An unexpected error occurred. Please check the server logs for details.",
+            )
+
+    async def analyze_technical_details(
         self,
-        analysis_data: Dict[str, Any] = Field(description="Complete JSON output from stackwalk_minidump tool"),
-        frame_limit: int = Field(default=20, description="Maximum number of frames to analyze (max: 50)"),
-        focus_thread: Literal["crashing", "all"] = Field(default="crashing", description="Which thread to analyze"),
+        stackwalk_output: Optional[Union[str, Dict[str, Any]]] = None,
+        technical_focus: Literal["registers", "memory", "stack_frames", "all"] = "all",
     ) -> str:
         """
-        Analyze stack trace frames and interpret call patterns, execution flow, and function sequences.
+        Perform deep technical analysis of crash dump focusing on registers, memory patterns, and stack frames.
 
-        This prompt specializes in understanding how programs execute and where they fail,
-        with expertise in call stack analysis and frame interpretation.
+        This prompt guides detailed low-level analysis of CPU state, memory access patterns,
+        and stack frame interpretation for understanding the exact failure mechanism.
+
+        Args:
+            stackwalk_output: Complete JSON output from stackwalk_minidump tool (as JSON string or dict)
+            technical_focus: Specific technical aspect to analyze in depth
+                           (registers, memory, stack_frames, all). Defaults to "all"
         """
-        # Load the interpret stack frames template
-        template_path = self._prompts_dir / "interpret_stack_frames.md"
-        with open(template_path, "r", encoding="utf-8") as f:
-            template = f.read()
+        # Handle case where prompt is called without parameters (for metadata/listing)
+        if stackwalk_output is None:
+            return self._create_usage_guide("analyze_technical_details")
 
-        # Extract and limit stack frames
-        crashing_thread = analysis_data.get("crashing_thread", {})
-        stack_frames = crashing_thread.get("frames", [])
-        limited_frames = stack_frames[: min(frame_limit, 50)]
+        try:
+            # Parse JSON if string is provided
+            if isinstance(stackwalk_output, str):
+                try:
+                    stackwalk_data = json.loads(stackwalk_output)
+                except json.JSONDecodeError as e:
+                    error_msg = f"Invalid JSON in stackwalk_output: {str(e)}"
+                    logger.error(error_msg)
+                    return self._create_error_response(
+                        "analyze_technical_details",
+                        error_msg,
+                        "The stackwalk_output must be valid JSON string or dictionary.",
+                    )
+            else:
+                # If it's already a dict, use it as is
+                stackwalk_data = stackwalk_output
 
-        # Build the complete prompt
-        prompt = f"{template}\n\n## Analysis Task\n\n"
-        prompt += f"**Stack Frames:**\n```json\n{json.dumps(limited_frames, indent=2)}\n```\n\n"
-        prompt += f"**Frame Limit:** {frame_limit}\n"
-        prompt += f"**Focus Thread:** {focus_thread}\n\n"
-        prompt += "Please analyze these stack frames and provide your structured JSON response."
+            # Runtime validation for robustness
+            if not isinstance(stackwalk_data, dict):
+                error_msg = (
+                    f"Invalid stackwalk_output type after parsing: expected dict, got {type(stackwalk_data).__name__}"
+                )
+                logger.error(error_msg)
+                return self._create_error_response(
+                    "analyze_technical_details",
+                    error_msg,
+                    "The stackwalk_output must be a dictionary containing the crash analysis data.",
+                )
 
-        return prompt
+            # Load the technical details template
+            template_path = self._prompts_dir / "analyze_technical_details.md"
+            if not template_path.exists():
+                error_msg = f"Template file not found: {template_path}"
+                logger.error(error_msg)
+                return self._create_error_response(
+                    "analyze_technical_details",
+                    error_msg,
+                    "The prompt template file is missing. Please ensure the installation is complete.",
+                )
 
-    async def decode_exception_info(
-        self,
-        analysis_data: Dict[str, Any] = Field(description="Complete JSON output from stackwalk_minidump tool"),
-        focus_type: Literal["address_pattern", "exception_type", "all"] = Field(
-            default="all", description="Focus on specific exception aspect"
-        ),
-    ) -> str:
+            with open(template_path, "r", encoding="utf-8") as f:
+                template = f.read()
+
+            # Build the complete prompt
+            prompt = f"{template}\n\n## Stackwalk Output\n\n"
+            prompt += f"```json\n{json.dumps(stackwalk_data, indent=2)}\n```\n\n"
+            prompt += f"**Technical Focus:** {technical_focus}\n\n"
+            prompt += (
+                "Please perform a deep technical analysis of this crash dump "
+                "following the response format specified above."
+            )
+
+            return prompt
+
+        except Exception as e:
+            error_msg = f"Unexpected error in analyze_technical_details: {str(e)}"
+            logger.exception(error_msg)
+            return self._create_error_response(
+                "analyze_technical_details",
+                error_msg,
+                "An unexpected error occurred. Please check the server logs for details.",
+            )
+
+    def _create_usage_guide(self, prompt_name: str) -> str:
         """
-        Decode exception information and provide targeted analysis of crash exception types and memory addresses.
+        Create a usage guide for when prompt is called without parameters.
 
-        This prompt specializes in Windows exception analysis with deep expertise in
-        interpreting crash exception types, memory addresses, and system-level crash patterns.
+        Args:
+            prompt_name: Name of the prompt
+
+        Returns:
+            Usage guide as a formatted message
         """
-        # Load the decode exception info template
-        template_path = self._prompts_dir / "decode_exception_info.md"
-        with open(template_path, "r", encoding="utf-8") as f:
-            template = f.read()
+        if prompt_name == "analyze_crash_with_expertise":
+            return """## Crash Analysis with Expertise
 
-        # Extract exception information
-        crash_info = analysis_data.get("crash_info", {})
-        system_info = analysis_data.get("system_info", {})
+This prompt analyzes crash dumps with expert-level insights, providing root cause analysis
+and concrete improvement suggestions.
 
-        exception_type = crash_info.get("type", "UNKNOWN")
-        exception_address = crash_info.get("address", "0x00000000")
+### Required Parameters
+- `stackwalk_output`: Complete JSON output from the stackwalk_minidump tool
 
-        # Build the complete prompt
-        prompt = f"{template}\n\n## Analysis Task\n\n"
-        prompt += f"**Exception Type:** {exception_type}\n"
-        prompt += f"**Exception Address:** {exception_address}\n"
-        prompt += f"**System Context:**\n```json\n{json.dumps(system_info, indent=2)}\n```\n\n"
-        prompt += f"**Focus Type:** {focus_type}\n\n"
-        prompt += "Please analyze this exception information and provide your structured JSON response."
+### Optional Parameters
+- `focus_areas`: List of specific areas to focus on (root_cause, prevention, improvements)
 
-        return prompt
+### Usage Example
+1. First, analyze a minidump file using the `stackwalk_minidump` tool
+2. Pass the resulting JSON output to this prompt for expert analysis
 
-    async def evaluate_symbol_quality(
-        self,
-        analysis_data: Dict[str, Any] = Field(description="Complete JSON output from stackwalk_minidump tool"),
-        focus_area: Literal["application_modules", "system_modules", "all"] = Field(
-            default="all", description="Focus on specific symbol aspect"
-        ),
-    ) -> str:
+The analysis will include:
+- Programming language detection from modules/symbols
+- Crash pattern recognition
+- Prevention strategies and code improvements
+- Expert recommendations based on 20 years of debugging experience
+"""
+        elif prompt_name == "analyze_technical_details":
+            return """## Technical Details Analysis
+
+This prompt performs deep technical analysis of crash dumps, focusing on registers, memory patterns, and stack frames.
+
+### Required Parameters
+- `stackwalk_output`: Complete JSON output from the stackwalk_minidump tool
+
+### Optional Parameters
+- `technical_focus`: Specific aspect to analyze (registers, memory, stack_frames, all)
+
+### Usage Example
+1. First, analyze a minidump file using the `stackwalk_minidump` tool
+2. Pass the resulting JSON output to this prompt for technical analysis
+
+The analysis will include:
+- Register state interpretation
+- Memory access pattern analysis
+- Stack frame pattern recognition
+- Symbol-less frame estimation methods
+"""
+        else:
+            return f"Usage guide for {prompt_name} - Please provide required parameters to use this prompt."
+
+    def _create_error_response(self, prompt_name: str, error: str, guidance: str) -> str:
         """
-        Evaluate symbol information quality and provide guidance for improving crash analysis accuracy.
+        Create a user-friendly error response.
 
-        This prompt specializes in debugging symbol analysis with expertise in understanding
-        how symbol information affects crash analysis and how to optimize symbol availability.
+        Args:
+            prompt_name: Name of the prompt that failed
+            error: Technical error message
+            guidance: User-friendly guidance
+
+        Returns:
+            Formatted error message as a prompt
         """
-        # Load the evaluate symbol quality template
-        template_path = self._prompts_dir / "evaluate_symbol_quality.md"
-        with open(template_path, "r", encoding="utf-8") as f:
-            template = f.read()
+        return f"""## Error in {prompt_name}
 
-        # Extract modules information
-        modules_info = analysis_data.get("modules", [])
+**Error:** {error}
 
-        # Build the complete prompt
-        prompt = f"{template}\n\n## Analysis Task\n\n"
-        prompt += f"**Modules Information:**\n```json\n{json.dumps(modules_info, indent=2)}\n```\n\n"
-        prompt += f"**Focus Area:** {focus_area}\n\n"
-        prompt += "Please analyze the symbol information and provide your structured JSON response."
+**Guidance:** {guidance}
 
-        return prompt
+### Required Parameters
+
+This prompt requires the following parameters:
+- `stackwalk_output` (required): Complete JSON output from the stackwalk_minidump tool
+- `focus_areas` (optional): List of specific areas to focus on (for analyze_crash_with_expertise)
+- `technical_focus` (optional): Specific technical aspect to analyze (for analyze_technical_details)
+
+### Example Usage
+
+To use this prompt correctly, first run the stackwalk_minidump tool on a crash dump file:
+1. Use the `stackwalk_minidump` tool with your .dmp file
+2. Pass the resulting JSON output to this prompt
+
+If you're experiencing issues, please check:
+- That you have valid stackwalk output data
+- That the data is in the correct JSON format
+- That all required template files are present
+"""
