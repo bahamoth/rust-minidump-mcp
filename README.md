@@ -151,9 +151,9 @@ Add to your Claude Desktop configuration file:
 ```json
 {
   "mcpServers": {
-    "minidump-mcp": {
+    "rust-minidump-mcp": {
       "command": "uvx",
-      "args": ["rust-minidump-mcp", "server", "--transport", "stdio"]
+      "args": ["rust-minidump-mcp", "server"]
     }
   }
 }
@@ -164,7 +164,7 @@ Add to your Claude Desktop configuration file:
 Claude Code automatically detects MCP servers. After installation:
 
 1. Open Claude Code in your project directory
-2. The minidump-mcp server will be available for crash analysis tasks
+2. The rust-minidump-mcp server will be available for crash analysis tasks
 
 ### VS Code with Continue.dev
 
@@ -174,9 +174,9 @@ Add to your Continue configuration (`~/.continue/config.json`):
 {
   "models": [...],
   "mcpServers": {
-    "minidump-mcp": {
+    "rust-minidump-mcp": {
       "command": "uvx",
-      "args": ["rust-minidump-mcp", "server", "--transport", "stdio"]
+      "args": ["rust-minidump-mcp", "server"]
     }
   }
 }

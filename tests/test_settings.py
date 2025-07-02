@@ -22,7 +22,7 @@ class TestServerSettings:
         """Test default settings values."""
         settings = ServerSettings()
 
-        assert settings.name == "minidump-mcp"
+        assert settings.name == "rust-minidump-mcp"
         assert settings.transport == "stdio"
         assert settings.log_level == "INFO"
         assert isinstance(settings.transport_config, StdioTransportConfig)

@@ -1,11 +1,11 @@
-"""Custom exceptions for minidump-mcp with detailed error messages and recovery suggestions."""
+"""Custom exceptions for rust-minidump-mcp with detailed error messages and recovery suggestions."""
 
 from pathlib import Path
 from typing import Any, Optional
 
 
 class MinidumpMCPError(Exception):
-    """Base exception for all minidump-mcp errors.
+    """Base exception for all rust-minidump-mcp errors.
 
     Provides structured error information with context and recovery suggestions.
     """
@@ -201,7 +201,7 @@ class ConnectionError(MinidumpMCPError):
 
         suggestion = "Ensure the server is running and accessible at the specified URL"
         if "refused" in reason.lower():
-            suggestion = "The server may not be running. Start it with 'minidump-mcp server'"
+            suggestion = "The server may not be running. Start it with 'rust-minidump-mcp server'"
         elif "timeout" in reason.lower():
             suggestion = "The server is not responding. Check if it's overloaded or increase timeout"
         elif "not found" in reason.lower():
