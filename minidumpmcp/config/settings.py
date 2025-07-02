@@ -71,7 +71,7 @@ class ServerSettings(BaseSettings):
     )
 
     # Core server settings
-    name: str = Field(default="minidump-mcp", description="Server name")
+    name: str = Field(default="rust-minidump-mcp", description="Server name")
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(default="INFO", description="Logging level")
 
     # Transport selection

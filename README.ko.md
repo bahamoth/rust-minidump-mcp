@@ -31,38 +31,38 @@ AI 에이전트와 개발자가 애플리케이션 크래시를 이해할 수 �
 ```bash
 # 프로젝트 디렉토리에서
 # 서버 실행 (기본값: stdio transport)
-uvx --from . minidump-mcp server
+uvx --from . rust-minidump-mcp server
 
 # 웹 접근용 HTTP transport 사용
-uvx --from . minidump-mcp server --transport streamable-http
+uvx --from . rust-minidump-mcp server --transport streamable-http
 
 # 클라이언트 실행
-uvx --from . minidump-mcp client
+uvx --from . rust-minidump-mcp client
 
 # PyPI 배포 후 (향후)
-uvx minidump-mcp server
-uvx minidump-mcp client
+uvx rust-minidump-mcp server
+uvx rust-minidump-mcp client
 ```
 
 ### 방법 2: uv로 설치
 
 1. 설치:
 ```bash
-uv pip install minidump-mcp 
+uv pip install rust-minidump-mcp 
 ```
 
 2. 서버 실행:
 ```bash
 # 기본값: stdio transport (AI 에이전트 통합용)
-minidump-mcp server
+rust-minidump-mcp server
 
 # 또는 웹 접근용 HTTP transport 사용
-minidump-mcp server --transport streamable-http --port 8000
+rust-minidump-mcp server --transport streamable-http --port 8000
 ```
 
 3. 클라이언트 실행:
 ```bash
-minidump-mcp client
+rust-minidump-mcp client
 ```
 
 ## 📚 사용법
@@ -72,39 +72,39 @@ minidump-mcp client
 #### STDIO 전송 (기본값)
 ```bash
 # 기본 설정 - AI 에이전트 통합용 (Claude Desktop, VS Code 등)
-minidump-mcp server
+rust-minidump-mcp server
 
 # 명시적 지정
-minidump-mcp server --transport stdio
+rust-minidump-mcp server --transport stdio
 ```
 
 #### Streamable HTTP 전송
 ```bash
 # 웹 접근 및 디버깅용
-minidump-mcp server --transport streamable-http
+rust-minidump-mcp server --transport streamable-http
 
 # 사용자 지정 포트
-minidump-mcp server --transport streamable-http --port 8080
+rust-minidump-mcp server --transport streamable-http --port 8080
 ```
 
 #### SSE 전송
 ```bash
 # 실시간 스트리밍용
-minidump-mcp server --transport sse --port 9000
+rust-minidump-mcp server --transport sse --port 9000
 ```
 
 ### 클라이언트 실행
 
 ```bash
 # 기본 설정으로 연결
-minidump-mcp client
+rust-minidump-mcp client
 
 # 사용자 지정 서버에 연결
-minidump-mcp client --url http://localhost:8080/mcp
+rust-minidump-mcp client --url http://localhost:8080/mcp
 
 # 환경 변수 사용
 export MINIDUMP_MCP_CLIENT_URL=http://localhost:8080/mcp
-minidump-mcp client
+rust-minidump-mcp client
 ```
 
 ## 📚 MCP 도구
@@ -156,9 +156,9 @@ Claude Desktop 설정 파일에 추가:
 ```json
 {
   "mcpServers": {
-    "minidump-mcp": {
+    "rust-minidump-mcp": {
       "command": "uvx",
-      "args": ["--from", ".", "minidump-mcp", "server", "--transport", "stdio"],
+      "args": ["--from", ".", "rust-minidump-mcp", "server"],
       "cwd": "/path/to/rust-minidump-mcp"
     }
   }
@@ -169,9 +169,9 @@ PyPI 배포 후에는 다음과 같이 단순화할 수 있습니다:
 ```json
 {
   "mcpServers": {
-    "minidump-mcp": {
+    "rust-minidump-mcp": {
       "command": "uvx",
-      "args": ["minidump-mcp", "server", "--transport", "stdio"]
+      "args": ["rust-minidump-mcp", "server"]
     }
   }
 }

@@ -1,4 +1,4 @@
-"""CLI interface for minidump-mcp server and client."""
+"""CLI interface for rust-minidump-mcp server and client."""
 
 import asyncio
 from typing import Any, Dict
@@ -15,7 +15,7 @@ app.add_typer(client_app, name="client")
 
 @app.command("server")
 def server(
-    name: str = typer.Option("minidump-mcp", help="Server name"),
+    name: str = typer.Option("rust-minidump-mcp", help="Server name"),
     transport: str = typer.Option("stdio", help="Transport type (stdio, streamable-http, sse)"),
     log_level: str = typer.Option("INFO", help="Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"),
     host: str = typer.Option("127.0.0.1", help="Host for HTTP/SSE transports"),

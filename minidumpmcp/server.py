@@ -88,7 +88,7 @@ async def run_mcp_server(settings: ServerSettings | None = None) -> None:
 
 
 def main() -> None:
-    """Entry point for the minidump-mcp command."""
+    """Entry point for the rust-minidump-mcp command."""
     try:
         asyncio.run(run_mcp_server())
     except KeyboardInterrupt:

@@ -251,8 +251,11 @@ def call_prompt(
         rust-minidump-mcp client call-prompt analyze_technical_details \\
             --args '{"stackwalk_output": "{\"crash\": \"data\"}", "technical_focus": "all"}'
 
-        rust-minidump-mcp client call-prompt analyze_crash_end_to_end \\
-            --args '{"dump_path": "/path/to/dump.dmp", "symbol_sources": "[\"/path/to/symbols\"]"}'
+        rust-minidump-mcp client call-prompt analyze_crash_with_expertise \\
+            --args '{"stackwalk_output": "{\"crash\": \"data\"}", "focus_areas": ["root_cause", "prevention"]}'
+
+        rust-minidump-mcp client call-prompt symbol_transformation_guide \\
+            --args '{"symbol_sources": ["/path/to/symbols"], "target_modules": ["myapp.exe"]}'
     """
     settings = _create_client_settings(url, transport, timeout)
 
