@@ -3,7 +3,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import List, Literal, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class CrashAnalysisProvider:
 
     async def analyze_crash_with_expertise(
         self,
-        stackwalk_output: Optional[Union[str, Dict[str, Any]]] = None,
+        stackwalk_output: Optional[str] = None,
         focus_areas: Optional[List[Literal["root_cause", "prevention", "improvements"]]] = None,
     ) -> str:
         """
@@ -28,7 +28,7 @@ class CrashAnalysisProvider:
         detect crash patterns, and recommend prevention strategies.
 
         Args:
-            stackwalk_output: Complete JSON output from stackwalk_minidump tool (as JSON string or dict)
+            stackwalk_output: Complete JSON output from stackwalk_minidump tool as JSON string
             focus_areas: Optional list of specific areas to focus the analysis on
                         (root_cause, prevention, improvements)
         """
@@ -37,32 +37,27 @@ class CrashAnalysisProvider:
             return self._create_usage_guide("analyze_crash_with_expertise")
 
         try:
-            # Parse JSON if string is provided
-            if isinstance(stackwalk_output, str):
-                try:
-                    stackwalk_data = json.loads(stackwalk_output)
-                except json.JSONDecodeError as e:
-                    error_msg = f"Invalid JSON in stackwalk_output: {str(e)}"
-                    logger.error(error_msg)
-                    return self._create_error_response(
-                        "analyze_crash_with_expertise",
-                        error_msg,
-                        "The stackwalk_output must be valid JSON string or dictionary.",
-                    )
-            else:
-                # If it's already a dict, use it as is
-                stackwalk_data = stackwalk_output
-
-            # Runtime validation for robustness
-            if not isinstance(stackwalk_data, dict):
-                error_msg = (
-                    f"Invalid stackwalk_output type after parsing: expected dict, got {type(stackwalk_data).__name__}"
-                )
+            # Parse JSON string to dict
+            # Parse JSON string to dict
+            try:
+                stackwalk_data = json.loads(stackwalk_output)
+            except json.JSONDecodeError as e:
+                error_msg = f"Invalid JSON in stackwalk_output: {str(e)}"
                 logger.error(error_msg)
                 return self._create_error_response(
                     "analyze_crash_with_expertise",
                     error_msg,
-                    "The stackwalk_output must be a dictionary containing the crash analysis data.",
+                    "The stackwalk_output must be a valid JSON string.",
+                )
+
+            # Validate it's a dict
+            if not isinstance(stackwalk_data, dict):
+                error_msg = f"stackwalk_output must be a JSON object, got {type(stackwalk_data).__name__}"
+                logger.error(error_msg)
+                return self._create_error_response(
+                    "analyze_crash_with_expertise",
+                    error_msg,
+                    "The stackwalk_output must be a JSON object (dictionary).",
                 )
 
             # Load the analyze crash with expertise template
@@ -104,8 +99,8 @@ class CrashAnalysisProvider:
 
     async def analyze_technical_details(
         self,
-        stackwalk_output: Optional[Union[str, Dict[str, Any]]] = None,
-        technical_focus: Literal["registers", "memory", "stack_frames", "all"] = "all",
+        stackwalk_output: Optional[str] = None,
+        technical_focus: str = "all",
     ) -> str:
         """
         Perform deep technical analysis of crash dump focusing on registers, memory patterns, and stack frames.
@@ -114,7 +109,7 @@ class CrashAnalysisProvider:
         and stack frame interpretation for understanding the exact failure mechanism.
 
         Args:
-            stackwalk_output: Complete JSON output from stackwalk_minidump tool (as JSON string or dict)
+            stackwalk_output: Complete JSON output from stackwalk_minidump tool as JSON string
             technical_focus: Specific technical aspect to analyze in depth
                            (registers, memory, stack_frames, all). Defaults to "all"
         """
@@ -122,33 +117,39 @@ class CrashAnalysisProvider:
         if stackwalk_output is None:
             return self._create_usage_guide("analyze_technical_details")
 
-        try:
-            # Parse JSON if string is provided
-            if isinstance(stackwalk_output, str):
-                try:
-                    stackwalk_data = json.loads(stackwalk_output)
-                except json.JSONDecodeError as e:
-                    error_msg = f"Invalid JSON in stackwalk_output: {str(e)}"
-                    logger.error(error_msg)
-                    return self._create_error_response(
-                        "analyze_technical_details",
-                        error_msg,
-                        "The stackwalk_output must be valid JSON string or dictionary.",
-                    )
-            else:
-                # If it's already a dict, use it as is
-                stackwalk_data = stackwalk_output
+        # Validate technical_focus
+        valid_focus = ["registers", "memory", "stack_frames", "all"]
+        if technical_focus not in valid_focus:
+            error_msg = f"Invalid technical_focus: '{technical_focus}'. Must be one of: {valid_focus}"
+            logger.error(error_msg)
+            return self._create_error_response(
+                "analyze_technical_details",
+                error_msg,
+                f"The technical_focus must be one of: {', '.join(valid_focus)}",
+            )
 
-            # Runtime validation for robustness
-            if not isinstance(stackwalk_data, dict):
-                error_msg = (
-                    f"Invalid stackwalk_output type after parsing: expected dict, got {type(stackwalk_data).__name__}"
-                )
+        try:
+            # Parse JSON string to dict
+            # Parse JSON string to dict
+            try:
+                stackwalk_data = json.loads(stackwalk_output)
+            except json.JSONDecodeError as e:
+                error_msg = f"Invalid JSON in stackwalk_output: {str(e)}"
                 logger.error(error_msg)
                 return self._create_error_response(
                     "analyze_technical_details",
                     error_msg,
-                    "The stackwalk_output must be a dictionary containing the crash analysis data.",
+                    "The stackwalk_output must be a valid JSON string.",
+                )
+
+            # Validate it's a dict
+            if not isinstance(stackwalk_data, dict):
+                error_msg = f"stackwalk_output must be a JSON object, got {type(stackwalk_data).__name__}"
+                logger.error(error_msg)
+                return self._create_error_response(
+                    "analyze_technical_details",
+                    error_msg,
+                    "The stackwalk_output must be a JSON object (dictionary).",
                 )
 
             # Load the technical details template

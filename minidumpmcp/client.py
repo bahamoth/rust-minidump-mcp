@@ -10,8 +10,10 @@ from mcp import Tool
 from mcp.types import Prompt, TextContent
 from rich import print_json
 from rich.console import Console
+from rich.syntax import Syntax
 from rich.table import Table
 
+from minidumpmcp.client_validators.validators import ArgumentValidator, ParameterConverter
 from minidumpmcp.config.client_settings import ClientSettings
 from minidumpmcp.exceptions import ConfigurationError
 
@@ -180,7 +182,7 @@ async def _describe_prompt(settings: ClientSettings, name: str) -> None:
 @client_app.command("call-tool")
 def call_tool(
     name: str = typer.Argument(..., help="Tool name to call"),
-    params: List[str] = typer.Option([], "--param", "-p", help="Parameters in key=value format"),
+    args: Optional[str] = typer.Option(None, "--args", help="Arguments as JSON object string"),
     url: Optional[str] = typer.Option(None, "--url", "-u", help="Server URL"),
     transport: Optional[str] = typer.Option(
         None, "--transport", "-t", help="Transport type: stdio, streamable-http, sse"
@@ -191,15 +193,20 @@ def call_tool(
 
     Examples:
         rust-minidump-mcp client call-tool stackwalk_minidump \\
-            --param minidump_path=/path/to/dump.dmp \\
-            --param symbols_path=/path/to/symbols
+            --args '{"minidump_path": "/path/to/dump.dmp", "symbols_path": "/path/to/symbols"}'
     """
     settings = _create_client_settings(url, transport, timeout)
-    try:
-        arguments = _parse_params(params)
-    except ValueError as e:
-        console.print(f"[red]Error parsing parameters: {e}[/red]")
-        raise typer.Exit(1) from e
+
+    if args:
+        try:
+            parsed = ParameterConverter.parse_json_arguments(args)
+            # Convert all values to strings for MCP protocol compliance
+            arguments = ParameterConverter.convert_to_mcp_format(parsed)
+        except ValueError as e:
+            console.print(f"[red]Error: {e}[/red]")
+            raise typer.Exit(1) from e
+    else:
+        arguments = {}
 
     asyncio.run(_call_tool(settings, name, arguments))
 
@@ -231,7 +238,7 @@ async def _call_tool(settings: ClientSettings, name: str, arguments: Dict[str, A
 @client_app.command("call-prompt")
 def call_prompt(
     name: str = typer.Argument(..., help="Prompt name to call"),
-    params: List[str] = typer.Option([], "--param", "-p", help="Parameters in key=value format"),
+    args: Optional[str] = typer.Option(None, "--args", help="Arguments as JSON object string"),
     url: Optional[str] = typer.Option(None, "--url", "-u", help="Server URL"),
     transport: Optional[str] = typer.Option(
         None, "--transport", "-t", help="Transport type: stdio, streamable-http, sse"
@@ -241,16 +248,24 @@ def call_prompt(
     """Call a prompt with specified parameters.
 
     Examples:
+        rust-minidump-mcp client call-prompt analyze_technical_details \\
+            --args '{"stackwalk_output": "{\"crash\": \"data\"}", "technical_focus": "all"}'
+
         rust-minidump-mcp client call-prompt analyze_crash_end_to_end \\
-            --param dump_path=/path/to/dump.dmp \\
-            --param 'symbol_sources=["/path/to/symbols"]'
+            --args '{"dump_path": "/path/to/dump.dmp", "symbol_sources": "[\"/path/to/symbols\"]"}'
     """
     settings = _create_client_settings(url, transport, timeout)
-    try:
-        arguments = _parse_params(params)
-    except ValueError as e:
-        console.print(f"[red]Error parsing parameters: {e}[/red]")
-        raise typer.Exit(1) from e
+
+    if args:
+        try:
+            parsed = ParameterConverter.parse_json_arguments(args)
+            # Convert all values to strings for MCP protocol compliance
+            arguments = ParameterConverter.convert_to_mcp_format(parsed)
+        except ValueError as e:
+            console.print(f"[red]Error: {e}[/red]")
+            raise typer.Exit(1) from e
+    else:
+        arguments = {}
 
     asyncio.run(_call_prompt(settings, name, arguments))
 
@@ -259,6 +274,23 @@ async def _call_prompt(settings: ClientSettings, name: str, arguments: Dict[str,
     """Call prompt implementation."""
     async with Client(settings.config_dict) as client:
         try:
+            # First, get prompt metadata to validate arguments
+            prompts = await client.list_prompts()
+            prompt = next((p for p in prompts if p.name == name), None)
+
+            if not prompt:
+                console.print(f"[red]Error: Prompt '{name}' not found[/red]")
+                raise typer.Exit(1)
+
+            # Validate all arguments at once
+            validation_errors = ArgumentValidator.validate_prompt_arguments(prompt, arguments)
+            if validation_errors:
+                console.print("[red]Error: Invalid arguments:[/red]")
+                for error in validation_errors:
+                    console.print(f"  - {error}")
+                _print_prompt_usage(name, prompt)
+                raise typer.Exit(1)
+
             console.print(f"[yellow]Calling prompt '{name}'...[/yellow]")
             result = await client.get_prompt(name, arguments)
 
@@ -271,7 +303,11 @@ async def _call_prompt(settings: ClientSettings, name: str, arguments: Dict[str,
             console.print("\n[green]Result:[/green]")
             console.print("\n\n".join(text_parts))
         except Exception as e:
+            import traceback
+
             console.print(f"[red]Error calling prompt: {e}[/red]")
+            console.print("[yellow]Full traceback:[/yellow]")
+            traceback.print_exc()
             raise typer.Exit(1) from e
 
 
@@ -314,25 +350,6 @@ def _format_prompts_table(prompts: List[Prompt]) -> Table:
     return table
 
 
-def _parse_params(params: List[str]) -> Dict[str, Any]:
-    """Parse command line parameters in format key=value."""
-    result = {}
-    for param in params:
-        if "=" not in param:
-            raise ValueError(f"Invalid parameter format: {param}. Expected key=value")
-
-        key, value = param.split("=", 1)
-
-        # Try to parse as JSON first
-        try:
-            result[key] = json.loads(value)
-        except json.JSONDecodeError:
-            # If not JSON, treat as string
-            result[key] = value
-
-    return result
-
-
 def _print_schema(schema: Dict[str, Any], indent: int = 2) -> None:
     """Print JSON schema in a readable format."""
     if "properties" in schema:
@@ -347,3 +364,55 @@ def _print_schema(schema: Dict[str, Any], indent: int = 2) -> None:
             console.print(f"{indent_str}- {prop_name} ({prop_type}) {req_str}")
             if description:
                 console.print(f"{indent_str}  {description}")
+
+
+def _print_prompt_usage(name: str, prompt: Prompt) -> None:
+    """Print detailed usage information for a prompt."""
+    console.print(f"\n[yellow]Valid arguments for '{name}':[/yellow]")
+
+    # Build example JSON
+    example_json = {}
+
+    if not prompt.arguments:
+        return
+
+    for arg in prompt.arguments:
+        req = "[red]required[/red]" if arg.required else "[green]optional[/green]"
+        console.print(f"\n  [bold]{arg.name}[/bold] ({req})")
+
+        if arg.description:
+            schema = ArgumentValidator.parse_schema_from_description(arg.description)
+            if schema:
+                # Extract type and enum info
+                enum_values = ArgumentValidator.extract_enum_values(schema)
+                if enum_values:
+                    console.print("    Type: string (enum)")
+                    console.print(f"    Values: {enum_values}")
+                    # Use first enum value as example
+                    example_json[arg.name] = enum_values[0]
+                else:
+                    # Generic type info from schema
+                    if "type" in schema:
+                        console.print(f"    Type: {schema['type']}")
+                    elif "anyOf" in schema:
+                        types = [opt.get("type", "any") for opt in schema["anyOf"] if "type" in opt]
+                        console.print(f"    Type: {' or '.join(types)}")
+
+                    # Build example value
+                    if "object" in str(schema):
+                        example_json[arg.name] = '{"key": "value"}'
+                    elif "array" in str(schema):
+                        example_json[arg.name] = '["item1", "item2"]'
+                    else:
+                        example_json[arg.name] = "example_value"
+            else:
+                console.print(f"    {arg.description}")
+                example_json[arg.name] = "value"
+
+    # Pretty print example
+    console.print("\n[yellow]Example usage:[/yellow]")
+    pretty_json = json.dumps(example_json, indent=2)
+    syntax = Syntax(pretty_json, "json", theme="monokai", line_numbers=False)
+    console.print("    --args '", end="")
+    console.print(syntax, end="")
+    console.print("'")
