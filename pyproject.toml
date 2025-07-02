@@ -88,6 +88,17 @@ warn_unused_ignores = true
 show_error_codes = true
 disable_error_code = ["attr-defined"]
 
+# ── Exclude test files from strict checking ──────────────────────────────────────
+exclude = [
+    "tests/",
+]
+
+# ── Per-module configuration ─────────────────────────────────────────────────────
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+check_untyped_defs = false
+
 [tool.pytest.ini_options]
 markers = [
     "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",

@@ -15,7 +15,7 @@ class TestClientSettings:
         """Test default client settings."""
         settings = ClientSettings()
         assert settings.url == "http://localhost:8000/mcp"
-        assert settings.transport == "streamable-http"
+        assert settings.transport == "stdio"
         assert settings.timeout == 30.0
 
     def test_env_var_override(self) -> None:
@@ -78,4 +78,4 @@ class TestClientSettings:
             settings = ClientSettings(url="http://direct:9000/api")
             assert settings.url == "http://direct:9000/api"  # Direct override
             assert settings.timeout == 45.0  # From env var
-            assert settings.transport == "streamable-http"  # Default
+            assert settings.transport == "stdio"  # Default

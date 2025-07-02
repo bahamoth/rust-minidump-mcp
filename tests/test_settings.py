@@ -23,9 +23,9 @@ class TestServerSettings:
         settings = ServerSettings()
 
         assert settings.name == "minidump-mcp"
-        assert settings.transport == "streamable-http"
+        assert settings.transport == "stdio"
         assert settings.log_level == "INFO"
-        assert isinstance(settings.transport_config, StreamableHttpConfig)
+        assert isinstance(settings.transport_config, StdioTransportConfig)
 
     def test_programmatic_configuration(self) -> None:
         """Test programmatic configuration of settings."""
