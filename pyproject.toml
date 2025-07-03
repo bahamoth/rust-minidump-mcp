@@ -1,6 +1,6 @@
 [project]
 name = "rust-minidump-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "Rust Minidump MCP server"
 authors = [{name = "bahamoth", email = "bahamoth@naver.com"}]
 readme = "README.md"
