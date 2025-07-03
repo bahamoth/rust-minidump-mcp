@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/bahamoth/rust-minidump-mcp/compare/v0.1.2...v0.1.3) (2025-07-03)
+
+
+### Bug Fixes
+
+* Publish to PyPI instead of TestPyPI ([7578f3f](https://github.com/bahamoth/rust-minidump-mcp/commit/7578f3fd1583911344e3d4599cac2949e26091a6))
+
 ## [0.1.2](https://github.com/bahamoth/rust-minidump-mcp/compare/v0.1.1...v0.1.2) (2025-07-03)
 
 
