@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/bahamoth/rust-minidump-mcp/compare/v0.1.1...v0.1.2) (2025-07-03)
+
+
+### Bug Fixes
+
+* update READMEs with simplified installation and prompt info ([72b24f8](https://github.com/bahamoth/rust-minidump-mcp/commit/72b24f89ea682696718e24a793d20f951342bb2c))
+
 ## [0.1.1](https://github.com/bahamoth/rust-minidump-mcp/compare/v0.1.0...v0.1.1) (2025-07-03)
 
 
