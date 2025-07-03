@@ -54,26 +54,13 @@ jobs:
       - name: Build package
         run: uv build
       
-      - name: Publish to TestPyPI
+      - name: Publish to PyPI
         env:
-          UV_PUBLISH_TOKEN: ${{ secrets.TESTPYPI_API_TOKEN }}
-          UV_PUBLISH_URL: https://test.pypi.org/legacy/
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           if [ -n "$UV_PUBLISH_TOKEN" ]; then
             uv publish --token $UV_PUBLISH_TOKEN
-            echo "✅ Published to TestPyPI: https://test.pypi.org/project/rust-minidump-mcp/"
+            echo "✅ Published to PyPI: https://pypi.org/project/rust-minidump-mcp/"
           else
-            echo "⚠️  No TestPyPI token configured, skipping TestPyPI publish"
+            echo "⚠️  No PyPI token configured, skipping PyPI publish"
           fi
-      
-      # PyPI publishing - commented out until ready for production
-      # - name: Publish to PyPI
-      #   env:
-      #     UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      #   run: |
-      #     if [ -n "$UV_PUBLISH_TOKEN" ]; then
-      #       uv publish --token $UV_PUBLISH_TOKEN
-      #       echo "✅ Published to PyPI: https://pypi.org/project/rust-minidump-mcp/"
-      #     else
-      #       echo "⚠️  No PyPI token configured, skipping PyPI publish"
-      #     fi
