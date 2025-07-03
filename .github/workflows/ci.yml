@@ -7,7 +7,10 @@ on:
 
 jobs:
   test:
+    if: |
+      ${{ !contains(github.event.pull_request.labels.*.name, 'autorelease: pending') }}
     runs-on: ubuntu-latest
+    # Skip CI for release-please PRs (they have 'autorelease: pending' label)
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v5

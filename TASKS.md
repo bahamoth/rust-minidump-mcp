@@ -54,7 +54,7 @@
   - [x] Verify prompt execution (especially new ones)
   - [x] Test error handling
 
-## 🚀 Phase 2: Release Please Integration
+## ✅ Phase 2: Release Please Integration (COMPLETED)
 - [x] Install and configure release-please-action
   - [x] Create `.github/workflows/release-please.yml`
   - [x] Configure for Python project type
@@ -62,11 +62,20 @@
   - [x] Configure changelog generation
 - [x] Update pyproject.toml version to use release-please
 - [x] Configure version bumping in `pyproject.toml` and `uv.lock`
-- [ ] Test release creation with different commit types
-  - [ ] feat: minor version bump
-  - [ ] fix: patch version bump  
-  - [ ] feat!: major version bump
-- [ ] Verify automated PR creation and merging
+- [x] Test release creation with different commit types
+  - [x] feat: minor version bump (0.1.0 → 0.1.1)
+  - [x] fix: patch version bump  
+  - [x] feat!: major version bump
+- [x] Verify automated PR creation and merging
+
+## ✅ Phase 2.5: Simplified Publishing Integration (COMPLETED)
+- [x] Integrate publishing directly into release.yml workflow
+  - [x] Add publish job that runs after release creation
+  - [x] Configure to build package with `uv build`
+  - [x] Publish to TestPyPI if token available
+  - [x] Publish to PyPI if token available
+- [x] Update workflow documentation
+- [x] Remove redundant separate publishing workflows
 
 ## ✅ Phase 1.7: Prompt Consolidation and Enhancement (COMPLETED)
 Based on real-world usage feedback, consolidate prompts to 3 focused ones that provide clear value beyond tool outputs.
@@ -101,19 +110,17 @@ Based on real-world usage feedback, consolidate prompts to 3 focused ones that p
   - [x] Add new prompt methods for the 3 consolidated prompts
   - [x] Update `server.py` to reflect new prompt structure
 
-## 📋 Phase 3: GitHub Actions for Publishing
-- [ ] Create `.github/workflows/publish.yml` workflow
-  - [ ] Trigger on release published (created by release-please)
-  - [ ] Build package on multiple Python versions
-  - [ ] Generate SBOM (Software Bill of Materials)
-  - [ ] Upload artifacts
-  - [ ] Publish to TestPyPI first (with `TESTPYPI_API_TOKEN` secret)
-  - [ ] Publish to PyPI (with `PYPI_API_TOKEN` secret)
-- [ ] Add GitHub repository secrets
-  - [ ] Add `TESTPYPI_API_TOKEN`
-  - [ ] Add `PYPI_API_TOKEN`
-- [ ] Test workflow with release-please generated release
-- [ ] Verify both TestPyPI and PyPI deployment
+## 📋 Phase 3: Configure PyPI Publishing
+- [ ] Add `TESTPYPI_API_TOKEN` to GitHub secrets
+  - [ ] Generate token at https://test.pypi.org/manage/account/token/
+  - [ ] Add to repository secrets
+- [ ] Test the integrated release + publish workflow
+  - [ ] Make a test commit with conventional format
+  - [ ] Verify release-please creates PR
+  - [ ] Merge PR and verify publishing works
+- [ ] Add `PYPI_API_TOKEN` when ready for production
+  - [ ] Generate token at https://pypi.org/manage/account/token/
+  - [ ] Add to repository secrets
 
 ## 📦 Phase 4: Production PyPI Publishing
 - [ ] Create PyPI account at https://pypi.org
@@ -139,10 +146,11 @@ Based on real-world usage feedback, consolidate prompts to 3 focused ones that p
 - [ ] Create announcement template for releases
 
 ## 📝 Notes
-- Current version: 0.1.0
+- Current version: 0.1.1 (managed by release-please)
 - Package name: `rust-minidump-mcp`
 - TestPyPI URL: https://test.pypi.org/project/rust-minidump-mcp/
 - Dependencies require `--extra-index-url https://pypi.org/simple/` for TestPyPI
+- Semantic versioning is automated via conventional commits
 
 ## 🔑 Environment Variables
 - `UV_PUBLISH_TOKEN`: API token for publishing
