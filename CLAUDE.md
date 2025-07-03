@@ -95,12 +95,12 @@ python -m minidumpmcp server                    # Default: stdio transport
 python -m minidumpmcp server --transport streamable-http --port 8000  # For web access
 python -m minidumpmcp server --transport sse --port 9000
 
-# Using uvx (from project directory during development)
-uvx --from . rust-minidump-mcp server                    # Default: stdio transport
-uvx --from . rust-minidump-mcp server --transport streamable-http  # For web access
-uvx --from . rust-minidump-mcp server --transport sse --port 9000
+# Using uvx (recommended - no installation needed)
+uvx rust-minidump-mcp server                              # Default: stdio transport
+uvx rust-minidump-mcp server --transport streamable-http  # For web access
+uvx rust-minidump-mcp server --transport sse --port 9000  # Server-Sent Events
 
-# Traditional method (after uv sync)
+# Traditional method (after pip/uv install)
 rust-minidump-mcp server                                  # Default: stdio transport
 rust-minidump-mcp server --transport streamable-http --port 8080  # For web access
 rust-minidump-mcp server --transport sse --port 9000      # Server-Sent Events
@@ -111,14 +111,12 @@ rust-minidump-mcp server --transport sse --port 9000      # Server-Sent Events
 # Development - from project directory
 python -m minidumpmcp client
 
-# Using uvx (from project directory during development)
-uvx --from . rust-minidump-mcp client
+# Using uvx (recommended - no installation needed)
+uvx rust-minidump-mcp client
 
-# Traditional method (after uv sync)
+# Traditional method (after pip/uv install)
 rust-minidump-mcp client  # Test client that connects to server and demos tools
 ```
-
-Note: After PyPI deployment, the uvx commands will simplify to `uvx rust-minidump-mcp server` and `uvx rust-minidump-mcp client`.
 
 ## Architecture
 
@@ -185,21 +183,25 @@ Configuration is handled through Pydantic Settings with environment variable ove
 
 ### MCP Prompts
 
-The project provides several specialized prompts for crash analysis workflows:
+The project provides three focused prompts for crash analysis:
 
-#### Stackwalk Analysis Prompts
-- **analyze_stackwalk_result**: Analyzes pre-processed stackwalk JSON to identify crash root causes
-- **interpret_stack_frames**: Interprets call stack patterns from stackwalk frames
-- **decode_exception_info**: Decodes Windows exception codes and memory access patterns
-- **evaluate_symbol_quality**: Evaluates symbol coverage from stackwalk results and suggests improvements
+- **analyze_crash_with_expertise**: Expert-level crash analysis with role-based insights
+  - Detects programming language from modules/symbols
+  - Provides concrete code improvement suggestions
+  - Identifies crash patterns and prevention strategies
+  - Offers tailored advice based on technology stack
 
-#### Symbol Preparation Prompts
-- **prepare_symbols_for_analysis**: Guides symbol preparation from PDB/DWARF to Breakpad format
+- **analyze_technical_details**: Deep technical analysis of crash internals
+  - Register state interpretation
+  - Stack frame pattern analysis
+  - Memory corruption detection
+  - Symbol-less frame estimation techniques
 
-#### End-to-End Analysis Prompts
-- **analyze_crash_end_to_end**: Complete crash analysis workflow from raw dump to final report
-
-Each prompt has clear input/output specifications and can be used individually or combined for comprehensive crash analysis.
+- **symbol_transformation_guide**: Comprehensive guide for symbol preparation
+  - Explains Breakpad format requirements
+  - Documents dump_syms tool usage
+  - Shows expected directory structure
+  - Common troubleshooting tips
 
 ### Testing
 

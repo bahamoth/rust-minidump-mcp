@@ -1,6 +1,7 @@
 # Rust Minidump MCP
 
 [![CI](https://github.com/bahamoth/rust-minidump-mcp/workflows/CI/badge.svg)](https://github.com/bahamoth/rust-minidump-mcp/actions/workflows/ci.yml)
+[![PyPI Version](https://img.shields.io/pypi/v/rust-minidump-mcp.svg)](https://pypi.org/project/rust-minidump-mcp/)
 [![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-purple)](https://modelcontextprotocol.io)
@@ -11,7 +12,7 @@ AI 에이전트와 개발자가 애플리케이션 크래시를 이해할 수 �
 ## 🚀 주요 기능
 
 - **Minidump 분석**: Windows 크래시 덤프 파일(`.dmp`)을 분석하여 상세한 스택 트레이스 제공
-- **심볼 추출**: 바이너리 파일(PDB, DWARF 형식)에서 Breakpad 심볼 추출
+- **심볼 변환**: 네이티브 디버그 심볼(PDB, DWARF)을 Breakpad 형식으로 변환
 - **다양한 Transport 방식 지원**: stdio (기본값), Streamable HTTP, SSE Transport 방식 지원
 - **AI 기반 분석**: AI 지원 크래시 디버깅을 위한 내장 프롬프트
 - **크로스 플랫폼**: Windows, macOS, Linux에서 동작
@@ -20,48 +21,49 @@ AI 에이전트와 개발자가 애플리케이션 크래시를 이해할 수 �
 ## 📋 사전 요구사항
 
 - Python 3.11 이상
-- [uv](https://github.com/astral-sh/uv) 패키지 관리자
+- [uv](https://github.com/astral-sh/uv) 패키지 관리자 (선택사항, 개발용)
 
 ## 🚀 빠른 시작
 
-### 방법 1: uvx 사용
+### 방법 1: uvx 사용 (권장)
 
 설치 없이 직접 실행:
 
 ```bash
-# 프로젝트 디렉토리에서
 # 서버 실행 (기본값: stdio transport)
-uvx --from . rust-minidump-mcp server
+uvx rust-minidump-mcp server
 
 # 웹 접근용 HTTP transport 사용
-uvx --from . rust-minidump-mcp server --transport streamable-http
+uvx rust-minidump-mcp server --transport streamable-http
 
 # 클라이언트 실행
-uvx --from . rust-minidump-mcp client
-
-# PyPI 배포 후 (향후)
-uvx rust-minidump-mcp server
 uvx rust-minidump-mcp client
 ```
 
-### 방법 2: uv로 설치
+### 방법 2: pip 사용
 
-1. 설치:
+PyPI에서 설치:
+
 ```bash
-uv pip install rust-minidump-mcp 
+pip install rust-minidump-mcp
 ```
 
-2. 서버 실행:
+### 방법 3: uv 사용
+
+프로젝트에 추가:
+```bash
+uv add rust-minidump-mcp
+```
+
+설치 후 실행:
 ```bash
 # 기본값: stdio transport (AI 에이전트 통합용)
 rust-minidump-mcp server
 
 # 또는 웹 접근용 HTTP transport 사용
 rust-minidump-mcp server --transport streamable-http --port 8000
-```
 
-3. 클라이언트 실행:
-```bash
+# 클라이언트
 rust-minidump-mcp client
 ```
 
@@ -95,16 +97,14 @@ rust-minidump-mcp server --transport sse --port 9000
 
 ### 클라이언트 실행
 
+클라이언트는 MCP 서버를 테스트하기 위한 간단한 도구입니다 - 개발이나 디버깅 목적이 아니라면 일반적으로 필요하지 않습니다.
+
 ```bash
-# 기본 설정으로 연결
+# 서버 연결 테스트
 rust-minidump-mcp client
 
-# 사용자 지정 서버에 연결
-rust-minidump-mcp client --url http://localhost:8080/mcp
-
-# 환경 변수 사용
-export MINIDUMP_MCP_CLIENT_URL=http://localhost:8080/mcp
-rust-minidump-mcp client
+# 사용 가능한 모든 명령어 보기
+rust-minidump-mcp client --help
 ```
 
 ## 📚 MCP 도구
@@ -116,32 +116,40 @@ minidump 크래시 파일을 분석하여 사람이 읽을 수 있는 스택 트
 **매개변수:**
 - `minidump_path` (str, 필수): minidump 파일 경로
 - `symbols_path` (str, 선택): 심볼 파일 또는 디렉토리 경로
-- `verbose` (bool, 선택): 상세 출력 포함 (기본값: False)
-
-**예시:**
-```python
-result = await stackwalk_minidump(
-    minidump_path="/path/to/crash.dmp",
-    symbols_path="/path/to/symbols"
-)
-```
+- `output_format` (str, 선택): 출력 형식 - "json" 또는 "text" (기본값: "json")
 
 ### extract_symbols
 
-바이너리 파일(PDB, DWARF)에서 Breakpad 심볼 파일을 추출합니다.
+네이티브 형식(PDB, DWARF)의 디버그 심볼을 stackwalk_minidump에서 사용할 수 있는 Breakpad 형식으로 변환합니다.
 
 **매개변수:**
-- `binary_path` (str, 필수): 바이너리 파일 경로
-- `output_dir` (str, 선택): 심볼 저장 디렉토리 (기본값: ./symbols/)
+- `binary_path` (str, 필수): 디버그 정보가 포함된 바이너리 파일 경로
+- `output_dir` (str, 선택): 변환된 심볼 저장 디렉토리 (기본값: ./symbols/)
 
-**예시:**
-```python
-result = await extract_symbols(
-    binary_path="/path/to/app.exe",
-    output_dir="./symbols"
-)
-# 생성됨: ./symbols/app.exe/1234ABCD/app.exe.sym
-```
+## 🎯 MCP 프롬프트
+
+서버는 포괄적인 크래시 분석을 위한 세 가지 특화된 프롬프트를 제공합니다:
+
+### analyze_crash_with_expertise
+역할 기반 인사이트를 제공하는 전문가 수준의 크래시 분석:
+- 모듈/심볼에서 프로그래밍 언어 감지
+- 구체적인 코드 개선 제안 제공
+- 크래시 패턴 및 예방 전략 식별
+- 기술 스택에 따른 맞춤형 조언 제공
+
+### analyze_technical_details
+크래시 내부의 심층 기술 분석:
+- 레지스터 상태 해석
+- 스택 프레임 패턴 분석
+- 메모리 손상 감지
+- 심볼 없는 프레임 추정 기법
+
+### symbol_transformation_guide
+심볼 준비를 위한 종합 가이드:
+- Breakpad 형식 요구사항 설명
+- dump_syms 도구 사용법 문서화
+- 예상 디렉토리 구조 표시
+- 일반적인 문제 해결 팁
 
 ## 🤖 AI 에이전트 통합
 

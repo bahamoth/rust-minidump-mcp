@@ -1,6 +1,7 @@
 # Rust Minidump MCP
 
 [![CI](https://github.com/bahamoth/rust-minidump-mcp/workflows/CI/badge.svg)](https://github.com/bahamoth/rust-minidump-mcp/actions/workflows/ci.yml)
+[![PyPI Version](https://img.shields.io/pypi/v/rust-minidump-mcp.svg)](https://pypi.org/project/rust-minidump-mcp/)
 [![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-purple)](https://modelcontextprotocol.io)
@@ -19,8 +20,8 @@ An MCP (Model Context Protocol) server that empowers AI agents and developers to
 
 ## 📋 Prerequisites
 
-- Python 3.13 or higher
-- [uv](https://github.com/astral-sh/uv) package manager
+- Python 3.11 or higher
+- [uv](https://github.com/astral-sh/uv) package manager (optional, for development)
 
 ## 🚀 Quick Start
 
@@ -39,24 +40,30 @@ uvx rust-minidump-mcp server --transport streamable-http
 uvx rust-minidump-mcp client
 ```
 
-### Method 2: Traditional Installation
+### Method 2: Using pip
 
-1. Install:
+Install from PyPI:
+
 ```bash
-uv pip install rust-minidump-mcp
+pip install rust-minidump-mcp
 ```
 
-2. Run the server:
+### Method 3: Using uv
+
+Add to your project:
 ```bash
-# Default: stdio transport (for AI agent integration)
+uv add rust-minidump-mcp
+```
+
+After installation, run:
+```bash
+# Server (default: stdio transport for AI agent integration)
 rust-minidump-mcp server
 
 # Or use HTTP transport for web access
 rust-minidump-mcp server --transport streamable-http --port 8000
-```
 
-3. Run the client:
-```bash
+# Client
 rust-minidump-mcp client
 ```
 
@@ -90,16 +97,14 @@ rust-minidump-mcp server --transport sse --port 9000
 
 ### Running the Client
 
+The client is a simple testing tool for the MCP server - you typically won't need it unless you're developing or debugging the server.
+
 ```bash
-# Connect using default settings
+# Test the server connection
 rust-minidump-mcp client
 
-# Connect to custom server
-rust-minidump-mcp client --url http://localhost:8080/mcp
-
-# Use environment variables
-export MINIDUMP_MCP_CLIENT_URL=http://localhost:8080/mcp
-rust-minidump-mcp client
+# See all available commands
+rust-minidump-mcp client --help
 ```
 
 ## 📚 MCP Tools
@@ -111,32 +116,40 @@ Analyzes minidump crash files to produce human-readable stack traces.
 **Parameters:**
 - `minidump_path` (str, required): Path to the minidump file
 - `symbols_path` (str, optional): Path to symbol files or directories
-- `verbose` (bool, optional): Include verbose output (default: False)
-
-**Example:**
-```python
-result = await stackwalk_minidump(
-    minidump_path="/path/to/crash.dmp",
-    symbols_path="/path/to/symbols"
-)
-```
+- `output_format` (str, optional): Output format - "json" or "text" (default: "json")
 
 ### extract_symbols
 
-Extracts Breakpad symbol files from binary files (PDB, DWARF).
+Converts debug symbols from native formats (PDB, DWARF) to Breakpad format for use with stackwalk_minidump.
 
 **Parameters:**
-- `binary_path` (str, required): Path to the binary file
-- `output_dir` (str, optional): Directory to save symbols (default: ./symbols/)
+- `binary_path` (str, required): Path to the binary file with debug info
+- `output_dir` (str, optional): Directory to save converted symbols (default: ./symbols/)
 
-**Example:**
-```python
-result = await extract_symbols(
-    binary_path="/path/to/app.exe",
-    output_dir="./symbols"
-)
-# Creates: ./symbols/app.exe/1234ABCD/app.exe.sym
-```
+## 🎯 MCP Prompts
+
+The server provides three specialized prompts for comprehensive crash analysis:
+
+### analyze_crash_with_expertise
+Expert-level crash analysis with role-based insights:
+- Detects programming language from modules/symbols
+- Provides concrete code improvement suggestions
+- Identifies crash patterns and prevention strategies
+- Offers tailored advice based on the technology stack
+
+### analyze_technical_details
+Deep technical analysis of crash internals:
+- Register state interpretation
+- Stack frame pattern analysis
+- Memory corruption detection
+- Symbol-less frame estimation techniques
+
+### symbol_transformation_guide
+Comprehensive guide for symbol preparation:
+- Explains Breakpad format requirements
+- Documents dump_syms tool usage
+- Shows expected directory structure
+- Common troubleshooting tips
 
 ## 🤖 AI Agent Integration
 
