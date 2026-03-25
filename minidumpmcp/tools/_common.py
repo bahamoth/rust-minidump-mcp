@@ -43,10 +43,15 @@ async def run_subprocess(
     # will otherwise error on ``Path`` entries.
     str_cmd = [str(part) for part in cmd]
 
-    # On Windows the default event-loop policy does not support ``subprocess``
-    # transports.  Emit a helpful error early so the caller can react.
+    # On Windows, async subprocesses require ``ProactorEventLoop`` (the
+    # default since Python 3.8).  Guard against the rare case where someone
+    # has explicitly switched to ``SelectorEventLoop``.
     if sys.platform == "win32":
-        raise RuntimeError("Asynchronous subprocess execution is not supported on Windows.")
+        loop = asyncio.get_running_loop()
+        if not isinstance(loop, asyncio.ProactorEventLoop):
+            raise RuntimeError(
+                f"Async subprocess requires ProactorEventLoop on Windows. Current loop: {type(loop).__name__}"
+            )
 
     # Spawn the child process.
     proc = await asyncio.create_subprocess_exec(
