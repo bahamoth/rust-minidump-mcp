@@ -38,7 +38,7 @@ async def run_mcp_server(settings: ServerSettings | None = None) -> None:
     mcp: FastMCP[None] = FastMCP(name=settings.name)
 
     # Register tools
-    stackwalk_provider = StackwalkProvider()
+    stackwalk_provider = StackwalkProvider(settings)
     mcp.tool(stackwalk_provider.stackwalk_minidump)
 
     dump_syms_tool = DumpSymsTool()

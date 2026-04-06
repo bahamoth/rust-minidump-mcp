@@ -82,6 +82,16 @@ class ServerSettings(BaseSettings):
     streamable_http: StreamableHttpConfig = Field(default_factory=StreamableHttpConfig)
     sse: SseTransportConfig = Field(default_factory=SseTransportConfig)
 
+    # Symbol configuration
+    symbol_url: str = Field(
+        default="",
+        description="Space-separated symbol server URLs passed as --symbols-url to minidump-stackwalk",
+    )
+    symbols_cache: str = Field(
+        default="",
+        description="Local directory to cache symbols downloaded from symbol servers",
+    )
+
     @property
     def transport_config(self) -> TransportConfig:
         """Get the configuration for the currently selected transport.

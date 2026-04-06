@@ -115,8 +115,10 @@ Analyzes minidump crash files to produce human-readable stack traces.
 
 **Parameters:**
 - `minidump_path` (str, required): Path to the minidump file
-- `symbols_path` (str, optional): Path to symbol files or directories
+- `symbols_path` (str, optional): Path to local symbol files or directories
 - `output_format` (str, optional): Output format - "json" or "text" (default: "json")
+
+Remote symbol servers configured via `MINIDUMP_MCP_SYMBOL_URL` are used automatically.
 
 ### extract_symbols
 
@@ -166,7 +168,10 @@ Add to your Claude Desktop configuration file:
   "mcpServers": {
     "rust-minidump-mcp": {
       "command": "uvx",
-      "args": ["rust-minidump-mcp", "server"]
+      "args": ["rust-minidump-mcp", "server"],
+      "env": {
+        "MINIDUMP_MCP_SYMBOL_URL": "https://msdl.microsoft.com/download/symbols"
+      }
     }
   }
 }
@@ -208,6 +213,10 @@ MINIDUMP_MCP_LOG_LEVEL=INFO
 MINIDUMP_MCP_TRANSPORT=streamable-http
 MINIDUMP_MCP_STREAMABLE_HTTP__HOST=127.0.0.1
 MINIDUMP_MCP_STREAMABLE_HTTP__PORT=8000
+
+# Symbol server configuration
+MINIDUMP_MCP_SYMBOL_URL="https://msdl.microsoft.com/download/symbols https://your-symbol-server/symbols"
+MINIDUMP_MCP_SYMBOLS_CACHE=/path/to/symbols-cache
 
 # Client configuration
 MINIDUMP_MCP_CLIENT_URL=http://localhost:8000/mcp

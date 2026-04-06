@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from minidumpmcp.config.settings import ServerSettings
 from minidumpmcp.exceptions import (
     FileValidationError,
     MinidumpAnalysisError,
@@ -33,6 +34,15 @@ def _get_bin_path(bin_name: str) -> Path:
 
 class StackwalkProvider:
     """Provider for minidump stackwalk tools."""
+
+    def __init__(self, settings: ServerSettings | None = None) -> None:
+        self._symbol_urls: list[str] = []
+        self._symbols_cache: str | None = None
+        if settings:
+            if settings.symbol_url:
+                self._symbol_urls = settings.symbol_url.split()
+            if settings.symbols_cache:
+                self._symbols_cache = settings.symbols_cache
 
     async def stackwalk_minidump(
         self, minidump_path: str, symbols_path: Optional[str] = None, output_format: str = "json"
@@ -97,6 +107,14 @@ class StackwalkProvider:
             else:
                 symbols_error = FileValidationError(symbols_dir, "Symbols directory not found or not a directory")
                 return {"error": str(symbols_error), "success": False, "error_code": symbols_error.error_code}
+
+        # Add symbol server URLs from server configuration
+        for url in self._symbol_urls:
+            cmd.extend(["--symbols-url", url])
+
+        # Add symbols cache directory
+        if self._symbols_cache:
+            cmd.extend(["--symbols-cache", self._symbols_cache])
 
         try:
             # Execute minidump-stackwalk with timeout using async helper
